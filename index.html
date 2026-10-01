@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@100;200&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <title>Twottor</title>
+  </head>
+  <body>
+    <aside class="sidebar" aria-label="Primary navigation">
+      <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Collapse sidebar" aria-expanded="true">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <div class="logo">
+        <i class="fa-solid fa-feather"></i>
+        <span>Twottor</span>
+      </div>
+      <nav class="nav-links">
+        <a class="nav-link active" href="#home" aria-current="page">
+          <i class="fa-solid fa-house"></i>
+          <span>Home</span>
+        </a>
+        <a class="nav-link" href="#explore">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>Explore</span>
+        </a>
+        <a class="nav-link" href="#notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span>Notifications</span>
+        </a>
+        <a class="nav-link" href="#messages">
+          <i class="fa-solid fa-envelope"></i>
+          <span>Messages</span>
+        </a>
+        <a class="nav-link" href="#profile">
+          <i class="fa-solid fa-user"></i>
+          <span>Profile</span>
+        </a>
+      </nav>
+      <!--<a class="compose-button" href="#compose">
+        <i class="fa-solid fa-feather-pointed"></i>
+        <span>Post</span>
+      </a>-->
+      <button class="lightdark-toggle" type="button" aria-label="Enable dark mode" aria-pressed="false">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+      <p class="version" id="version">v1.0.0</p>
+    </aside>
+    <textarea class="post-container" rows="4" placeholder="Write down your thoughts"></textarea>
+    <a class="compose-button" href="#compose">
+      <i class="fa-solid fa-feather-pointed"></i>
+      <span>Post</span>
+    </a>
+    <article class="post">
+      <header class="post-header">
+        <strong>Alex Johnson</strong>
+        <span>@alexjohnson · 2h</span>
+      </header>
+
+      <p class="post-content">
+        Just finished building my first website!
+      </p>
+
+      <footer class="post-actions">
+        <button><i class="fa-solid fa-reply"></i> Reply</button>
+        <button><i class="fa-solid fa-retweet"></i> Repost</button>
+        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+      </footer>
+    </article>
+    <article class="post">
+      <header class="post-header">
+        <strong>Alex Johnson</strong>
+        <span>@alexjohnson · 2h</span>
+      </header>
+
+      <p class="post-content">
+        Just finished building my first website!
+      </p>
+
+      <footer class="post-actions">
+        <button><i class="fa-solid fa-reply"></i> Reply</button>
+        <button><i class="fa-solid fa-retweet"></i> Repost</button>
+        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+      </footer>
+    </article>
+    <article class="post">
+      <header class="post-header">
+        <strong>Alex Johnson</strong>
+        <span>@alexjohnson · 2h</span>
+      </header>
+
+      <p class="post-content">
+        Just finished building my first website!
+      </p>
+
+      <footer class="post-actions">
+        <button><i class="fa-solid fa-reply"></i> Reply</button>
+        <button><i class="fa-solid fa-retweet"></i> Repost</button>
+        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+      </footer>
+    </article>
+    <article class="post">
+      <header class="post-header">
+        <strong>Alex Johnson</strong>
+        <span>@alexjohnson · 2h</span>
+      </header>
+
+      <p class="post-content">
+        Just finished building my first website!
+      </p>
+
+      <footer class="post-actions">
+        <button><i class="fa-solid fa-reply"></i> Reply</button>
+        <button><i class="fa-solid fa-retweet"></i> Repost</button>
+        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+      </footer>
+    </article>
+    <script>
+      const sidebar = document.querySelector(".sidebar");
+      const toggle = document.querySelector(".sidebar-toggle");
+      const lightdarkToggle = document.querySelector(".lightdark-toggle");
+
+      toggle.addEventListener("click", () => {
+        const collapsed = sidebar.classList.toggle("collapsed");
+        const version = document.getElementById("version");
+        version.style.display = collapsed ? "none" : "block";
+
+        document.body.classList.toggle("sidebar-collapsed", collapsed);
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+        toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+      });
+
+      lightdarkToggle.addEventListener("click", () => {
+        const darkMode = document.body.classList.toggle("dark-mode");
+        const icon = lightdarkToggle.querySelector("i");
+        const label = lightdarkToggle.querySelector("span");
+
+        lightdarkToggle.setAttribute("aria-pressed", String(darkMode));
+        lightdarkToggle.setAttribute("aria-label", darkMode ? "Disable dark mode" : "Enable dark mode");
+        toggle.style.backgroundColor = darkMode ? "#15202B" : "#ffffff";
+        toggle.style.borderColor = darkMode ? "#38444D" : "#e1e8ed";
+        icon.className = darkMode ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      });
+    </script>
+  </body>
+</html>
