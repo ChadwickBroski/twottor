@@ -53,70 +53,72 @@
       <i class="fa-solid fa-feather-pointed"></i>
       <span>Post</span>
     </a>
-    <article class="post">
-      <header class="post-header">
-        <strong>Alex Johnson</strong>
-        <span>@alexjohnson · 2h</span>
-      </header>
+    <div id="feed">
+      <article class="post">
+        <header class="post-header">
+          <strong>Alex Johnson</strong>
+          <span>@alexjohnson · 2h</span>
+        </header>
 
-      <p class="post-content">
-        Just finished building my first website!
-      </p>
+        <p class="post-content">
+          Just finished building my first website!
+        </p>
 
-      <footer class="post-actions">
-        <button><i class="fa-solid fa-reply"></i> Reply</button>
-        <button><i class="fa-solid fa-retweet"></i> Repost</button>
-        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
-      </footer>
-    </article>
-    <article class="post">
-      <header class="post-header">
-        <strong>Alex Johnson</strong>
-        <span>@alexjohnson · 2h</span>
-      </header>
+        <footer class="post-actions">
+          <button><i class="fa-solid fa-reply"></i> Reply</button>
+          <button><i class="fa-solid fa-retweet"></i> Repost</button>
+          <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+        </footer>
+      </article>
+      <article class="post">
+        <header class="post-header">
+          <strong>Alex Johnson</strong>
+          <span>@alexjohnson · 2h</span>
+        </header>
 
-      <p class="post-content">
-        Just finished building my first website!
-      </p>
+        <p class="post-content">
+          Just finished building my first website!
+        </p>
 
-      <footer class="post-actions">
-        <button><i class="fa-solid fa-reply"></i> Reply</button>
-        <button><i class="fa-solid fa-retweet"></i> Repost</button>
-        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
-      </footer>
-    </article>
-    <article class="post">
-      <header class="post-header">
-        <strong>Alex Johnson</strong>
-        <span>@alexjohnson · 2h</span>
-      </header>
+        <footer class="post-actions">
+          <button><i class="fa-solid fa-reply"></i> Reply</button>
+          <button><i class="fa-solid fa-retweet"></i> Repost</button>
+          <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+        </footer>
+      </article>
+      <article class="post">
+        <header class="post-header">
+          <strong>Alex Johnson</strong>
+          <span>@alexjohnson · 2h</span>
+        </header>
 
-      <p class="post-content">
-        Just finished building my first website!
-      </p>
+        <p class="post-content">
+          Just finished building my first website!
+        </p>
 
-      <footer class="post-actions">
-        <button><i class="fa-solid fa-reply"></i> Reply</button>
-        <button><i class="fa-solid fa-retweet"></i> Repost</button>
-        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
-      </footer>
-    </article>
-    <article class="post">
-      <header class="post-header">
-        <strong>Alex Johnson</strong>
-        <span>@alexjohnson · 2h</span>
-      </header>
+        <footer class="post-actions">
+          <button><i class="fa-solid fa-reply"></i> Reply</button>
+          <button><i class="fa-solid fa-retweet"></i> Repost</button>
+          <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+        </footer>
+      </article>
+      <article class="post">
+        <header class="post-header">
+          <strong>Alex Johnson</strong>
+          <span>@alexjohnson · 2h</span>
+        </header>
 
-      <p class="post-content">
-        Just finished building my first website!
-      </p>
+        <p class="post-content">
+          Just finished building my first website!
+        </p>
 
-      <footer class="post-actions">
-        <button><i class="fa-solid fa-reply"></i> Reply</button>
-        <button><i class="fa-solid fa-retweet"></i> Repost</button>
-        <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
-      </footer>
-    </article>
+        <footer class="post-actions">
+          <button><i class="fa-solid fa-reply"></i> Reply</button>
+          <button><i class="fa-solid fa-retweet"></i> Repost</button>
+          <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
+        </footer>
+      </article>
+    </div>
     <script>
       const sidebar = document.querySelector(".sidebar");
       const toggle = document.querySelector(".sidebar-toggle");
@@ -147,6 +149,7 @@
         icon.className = darkMode ? "fa-solid fa-sun" : "fa-solid fa-moon";
       });
     </script>
+    <script type="module" src="src/feed.js"></script>
     <script type="module" src="src/post.js"></script>
   </body>
 </html>

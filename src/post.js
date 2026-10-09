@@ -21,6 +21,8 @@ import {
   getFirestore,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { refreshFeed } from "./feed.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBCoUU_nUvDyM_m9tcGuYj-qYcmyPFWGTI",
@@ -33,25 +35,45 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 const analytics = getAnalytics(app);
+const user = auth.currentUser;
 
 const postButton = document.getElementById("post-button");
 const postContainer = document.querySelector(".post-container");
 
 postButton.addEventListener("click", async (event) => {
   event.preventDefault();
+  const user = auth.currentUser;
 
-  if(postContainer.value.trim() === "") {
-    console.log("Post container is empty. Please write something before posting.");
-  } else {
-    console.log(postContainer.value);
-    await addDoc(collection(db, "posts"), {
-      text: postContainer.value.trim(),
-      createdAt: serverTimestamp(),
-    });
-     
-    postContainer.value = ""; // Clear the textarea after posting
+  if (!user) {
+    alert("Please log in before posting.");
+    return;
+  }
+  if (!user.emailVerified) {
+    alert("Please verify your email before posting.");
+    return;
   }
 
-})
+  const text = postContainer.value.trim();
+
+  if (!text) {
+    alert("Write something before posting.");
+    return;
+  }
+  try {
+    await addDoc(collection(db, "posts"), {
+      text: text,
+      uid: user.uid,
+      userEmail: user.email,
+      createdAt: serverTimestamp(),
+    });
+
+    postContainer.value = "";
+    await refreshFeed();
+  } catch (error) {
+    console.error("Error creating post:", error);
+    alert("Unable to create the post.");
+  }
+});
