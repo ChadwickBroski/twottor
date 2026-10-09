@@ -39,12 +39,15 @@
           <span>Profile</span>
         </a>
       </nav>
-      <!--<a class="compose-button" href="#compose">
-        <i class="fa-solid fa-feather-pointed"></i>
-        <span>Post</span>
-      </a>-->
+      <a class="nav-link user" href="#profile" aria-label="Open profile">
+        <i class="fa-solid fa-user"></i>
+        <span id="usernameSpan">Profile</span>
+      </a>
       <button class="lightdark-toggle" type="button" aria-label="Enable dark mode" aria-pressed="false">
         <i class="fa-solid fa-moon"></i>
+      </button>
+      <button class="settings" type="button" aria-label="Open settings" aria-pressed="false">
+        <i class="fa-solid fa-gear"></i>
       </button>
       <p class="version" id="version">v1.0.0</p>
     </aside>
@@ -119,36 +122,7 @@
         </footer>
       </article>
     </div>
-    <script>
-      const sidebar = document.querySelector(".sidebar");
-      const toggle = document.querySelector(".sidebar-toggle");
-      const lightdarkToggle = document.querySelector(".lightdark-toggle");
-
-      toggle.addEventListener("click", () => {
-        const collapsed = sidebar.classList.toggle("collapsed");
-        const version = document.getElementById("version");
-        version.style.display = collapsed ? "none" : "block";
-
-        document.body.classList.toggle("sidebar-collapsed", collapsed);
-        toggle.setAttribute("aria-expanded", String(!collapsed));
-        toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
-      });
-
-      lightdarkToggle.addEventListener("click", () => {
-        const darkMode = document.body.classList.toggle("dark-mode");
-        const icon = lightdarkToggle.querySelector("i");
-        const label = lightdarkToggle.querySelector("span");
-        const body = document.getElementById("body");
-        body.style.background = darkMode ? "linear-gradient(135deg, #15202B 0%, #38444D 100%)" : "linear-gradient(135deg, #f7f9fa 0%, #e8f5fe 100%)";
-        lightdarkToggle.setAttribute("aria-pressed", String(darkMode));
-        //background: linear-gradient(135deg, #f7f9fa 0%, #e8f5fe 100%);
-        lightdarkToggle.setAttribute("aria-label", darkMode ? "Disable dark mode" : "Enable dark mode");
-        lightdarkToggle.style.borderColor = darkMode ? "#38444D" : "#e1e8ed";
-        toggle.style.backgroundColor = darkMode ? "#15202B" : "#ffffff";
-        toggle.style.borderColor = darkMode ? "#38444D" : "#e1e8ed";
-        icon.className = darkMode ? "fa-solid fa-sun" : "fa-solid fa-moon";
-      });
-    </script>
+    <script type="module" src="src/index.js"></script>
     <script type="module" src="src/feed.js"></script>
     <script type="module" src="src/post.js"></script>
   </body>
