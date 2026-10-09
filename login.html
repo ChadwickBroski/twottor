@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <title>Login | Twottor</title>
+  </head>
+  <body class="login-page">
+    <main class="login-shell">
+      <section class="login-card" aria-labelledby="login-title">
+        <a class="login-brand" href="index.html" aria-label="Twottor home">
+          <i class="fa-solid fa-feather"></i>
+          <span>Twottor</span>
+        </a>
+        <div class="login-heading">
+          <h1 id="login-title">Welcome back</h1>
+          <p>Log in to continue to Twottor.</p>
+        </div>
+        <button class="google-login" type="button">
+          <i class="fa-brands fa-google"></i>
+          <span>Continue with Google</span>
+        </button>
+        <div class="login-divider" aria-hidden="true"><span>or continue with email</span></div>
+        <form class="login-form" id="login-form">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com" required />
+          <div class="password-label-row">
+            <label for="password">Password</label>
+            <a href="forgotpassword.html">Forgot password?</a>
+          </div>
+          <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Enter your password" required />
+          <button class="login-submit" type="submit">Log in</button>
+          <p class="login-message" id="login-message" role="status"></p>
+        </form>
+        <p class="signup-prompt">New to Twottor? <a href="signup.html">Create an account</a></p>
+      </section>
+    </main>
+    <script type="module" src="src/login.js"></script>
+  </body>
+</html>
