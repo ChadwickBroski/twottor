@@ -1,13 +1,21 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+import { classifyText } from "./post.js";
 import {
   collection,
   getDocs,
+  doc,
+  getDoc,
+  updateDoc,
   getFirestore,
   query,
+  where,
   orderBy
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBCoUU_nUvDyM_m9tcGuYj-qYcmyPFWGTI",
@@ -23,22 +31,86 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const analytics = getAnalytics(app);
-const user = auth.currentUser;
 
-export async function refreshFeed() {
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => {
+    const escapes = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return escapes[character];
+  });
+}
+
+export async function refreshFeed(currentUser = auth.currentUser) {
   const feedContainer = document.getElementById("feed");
 
-  const postsSnapshot = await getDocs(
+  const allPostsSnapshot = await getDocs(
     query(
       collection(db, "posts"),
       orderBy("createdAt", "desc"),
     ),
   );
 
-  const posts = postsSnapshot.docs.map((doc) => ({
+  const allPosts = allPostsSnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   }));
+  let posts = allPosts;
+  const authorProfiles = new Map();
+
+  if (currentUser) {
+    const currentUserPosts = allPosts.filter((post) => post.uid === currentUser.uid);
+    const userProfileSnapshot = await getDoc(doc(db, "users", currentUser.uid));
+    const userProfile = userProfileSnapshot.exists() ? userProfileSnapshot.data() : {};
+    const userInterest = userProfile.interest;
+    authorProfiles.set(currentUser.uid, userProfile);
+
+    console.log("Posts by current user:", currentUserPosts);
+
+    if (currentUserPosts.length > 10 && userInterest) {
+      const matchingPostsSnapshot = await getDocs(
+        query(
+          collection(db, "posts"),
+          where("topic", "==", userInterest),
+          orderBy("createdAt", "desc"),
+        ),
+      );
+      posts = matchingPostsSnapshot.docs.map((postDoc) => ({
+        id: postDoc.id,
+        ...postDoc.data(),
+      }));
+    }
+
+    if (currentUserPosts.length >= 10 && currentUserPosts.length % 10 === 0) {
+      const userInterest = await classifyText(
+        "These are all the posts by the current user (ordered from latest to oldest): " +
+          currentUserPosts.map((post) => post.text).join(" "),
+      );
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        interest: userInterest,
+      });
+    }
+  }
+
+  const authorUids = [
+    ...new Set(
+      posts
+        .filter((post) => post.uid && (!post.username || !post.handle) && !authorProfiles.has(post.uid))
+        .map((post) => post.uid),
+    ),
+  ];
+  const authorSnapshots = await Promise.allSettled(
+    authorUids.map((uid) => getDoc(doc(db, "users", uid))),
+  );
+  authorSnapshots.forEach((result, index) => {
+    if (result.status === "fulfilled" && result.value.exists()) {
+      authorProfiles.set(authorUids[index], result.value.data());
+    }
+  });
 
   feedContainer.innerHTML = "";
 
@@ -68,19 +140,28 @@ export async function refreshFeed() {
     } else {
       createdAtText = `${Math.floor(timeAgo / 86400)} days ago`;
     }
-    const postElement = document.createElement("article");
+    let authorProfile = authorProfiles.get(post.uid) ?? {};
+    let authorName = escapeHtml(post.username || authorProfile.username || post.userEmail || "Unknown user");
+    let authorHandle = escapeHtml(post.handle || authorProfile.handle || post.userEmail || "user");
+    let postElement = document.createElement("article");
     postElement.classList.add("post");
     postElement.innerHTML = `
       <header class="post-header">
-        <strong>${post.userEmail}</strong>
-        <span>@${post.userEmail} · ${createdAtText}</span>
+        <strong>${authorName} · </strong>
+        <span>@${authorHandle} · ${createdAtText}</span>
       </header>
-      <p class="post-content">${post.text}</p>
+      <p class="post-content">${escapeHtml(post.text)}</p>
+      <footer class="post-actions">
+        <button><i class="fa-regular fa-thumbs-down"></i> Dislike</button>
+        <button><i class="fa-regular fa-thumbs-up"></i> Like</button>
+      </footer>
     `;
     feedContainer.appendChild(postElement);
   });
 }
 
-refreshFeed().catch((error) => {
-  console.error("Unable to load posts:", error);
+onAuthStateChanged(auth, (currentUser) => {
+  refreshFeed(currentUser).catch((error) => {
+    console.error("Unable to load posts:", error);
+  });
 });

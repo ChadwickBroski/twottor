@@ -139,6 +139,35 @@ body.dark-mode .sidebar {
   background: #1da1f2;
 }
 
+.compose-button.loader {
+  position: relative;
+  pointer-events: none;
+}
+
+.compose-button.loader > * {
+  visibility: hidden;
+}
+
+.compose-button.loader::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -10px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: compose-spin 700ms linear infinite;
+}
+
+@keyframes compose-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .nav-link.user span {
   min-width: 0;
   overflow: hidden;
