@@ -4,6 +4,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   sendEmailVerification,
+  signOut,
   signInWithPopup,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
@@ -47,14 +48,6 @@ function authError(error) {
   return errors[error.code] || "Unable to create the account. Please try again.";
 }
 
-async function saveUserProfile(user) {
-  await setDoc(doc(db, "users", user.uid), {
-    uid: user.uid,
-    email: user.email,
-    createdAt: serverTimestamp(),
-  });
-}
-
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -75,9 +68,9 @@ form.addEventListener("submit", async (event) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
 
     await sendEmailVerification(result.user);
+    await signOut(auth);
 
-    await saveUserProfile(result.user);
-    showMessage("Account created. Check your email to verify your account.");
+    showMessage("Check your email to verify your account before logging in.");
   } catch (error) {
     showMessage(authError(error), true);
     submitButton.disabled = false;
@@ -92,7 +85,11 @@ googleButton.addEventListener("click", async () => {
 
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    await saveUserProfile(result.user);
+    await setDoc(doc(db, "users", result.user.uid), {
+      uid: result.user.uid,
+      email: result.user.email,
+      createdAt: serverTimestamp(),
+    }, { merge: true });
     window.location.href = "index.html";
   } catch (error) {
     showMessage(authError(error), true);

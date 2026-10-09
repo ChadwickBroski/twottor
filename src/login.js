@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import {
   getAuth,
   GoogleAuthProvider,
+  signOut,
   signInWithEmailAndPassword,
   signInWithPopup,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -56,6 +57,15 @@ async function saveUserProfile(user) {
   );
 }
 
+async function requireVerifiedEmail(user) {
+  await user.reload();
+
+  if (!user.emailVerified) {
+    await signOut(auth);
+    throw new Error("email-not-verified");
+  }
+}
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const email = document.querySelector("#email").value.trim();
@@ -67,10 +77,16 @@ loginForm.addEventListener("submit", async (event) => {
 
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
+    await requireVerifiedEmail(result.user);
     await saveUserProfile(result.user);
     window.location.href = "index.html";
   } catch (error) {
-    showMessage(getAuthErrorMessage(error), true);
+    showMessage(
+      error.message === "email-not-verified"
+        ? "Verify your email before logging in."
+        : getAuthErrorMessage(error),
+      true,
+    );
     submitButton.disabled = false;
     submitButton.textContent = "Log in";
   }
