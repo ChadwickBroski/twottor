@@ -3,13 +3,18 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebas
 import {
   collection,
   getDocs,
+  deleteDoc,
+  getDoc,
+  doc,
   getFirestore,
   query,
-  orderBy
+  where,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import {
   getAuth,
   onAuthStateChanged,
+  signOut,
+  deleteUser,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -32,12 +37,72 @@ const toggle = document.querySelector(".sidebar-toggle");
 const lightdarkToggle = document.querySelector(".lightdark-toggle");
 const darkMode = localStorage.getItem("darkMode") === "enabled";
 
-const settings = document.querySelector(".settings");
+const settings = document.querySelector(".settingsButton");
+const settingsModal = document.getElementById("modal");
+const settingsDialog = settingsModal.querySelector(".modal-content");
+const closeSettingsButton = document.getElementById("close-modal");
+const themeSettingButton = document.getElementById("theme-setting");
+const logoutButton = document.getElementById("account-logout");
+const deleteAccountButton = document.getElementById("account-delete");
+
+function updateThemeSetting() {
+  const isDarkMode = document.body.classList.contains("dark-mode");
+  themeSettingButton.setAttribute("aria-pressed", String(isDarkMode));
+  themeSettingButton.setAttribute(
+    "aria-label",
+    isDarkMode ? "Dark mode on. Turn off dark mode" : "Dark mode off. Turn on dark mode",
+  );
+  themeSettingButton.innerHTML = isDarkMode
+    ? '<i class="fa-solid fa-sun" aria-hidden="true"></i>'
+    : '<i class="fa-solid fa-moon" aria-hidden="true"></i>';
+}
+
+async function logout() {
+  await signOut(auth);
+  window.location.href = "login.html";
+}
+
+async function deleteAccount() {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return;
+
+  const currentUserPosts = await getDocs(
+    query(collection(db, "posts"), where("uid", "==", currentUser.uid)),
+  );
+  await Promise.all(
+    currentUserPosts.docs.map((post) => deleteDoc(post.ref)),
+  );
+  const userProfile = await getDoc(doc(db, "users", currentUser.uid));
+  const handle = userProfile.data()?.handle?.trim();
+  const accountDocuments = [deleteDoc(doc(db, "users", currentUser.uid))];
+  if (handle) {
+    accountDocuments.push(deleteDoc(doc(db, "handles", handle)));
+  }
+  await Promise.all(accountDocuments);
+  await deleteUser(auth.currentUser);
+  await logout();
+  window.location.href = "login.html";
+}
+
+function openSettings() {
+  settingsModal.setAttribute("aria-hidden", "false");
+  settingsDialog.focus();
+}
+
+function closeSettings() {
+  settingsModal.setAttribute("aria-hidden", "true");
+  settings.focus();
+}
 
 const usernameSpan = document.getElementById("usernameSpan");
 onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+
   if (usernameSpan) {
-    usernameSpan.textContent = user?.email ?? "Not logged in";
+    usernameSpan.textContent = user.email ?? "";
   }
 });
 
@@ -61,7 +126,7 @@ function toggleDarkMode() {
   icon.className = darkModeEnabled ? "fa-solid fa-sun" : "fa-solid fa-moon";
 
   settings.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
-
+  updateThemeSetting();
 }
 
 if (darkMode) {
@@ -78,4 +143,39 @@ toggle.addEventListener("click", () => {
   toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
 });
 
+// Settings and dark mode event listeners
 lightdarkToggle.addEventListener("click", toggleDarkMode);
+settings.addEventListener("click", openSettings);
+closeSettingsButton.addEventListener("click", closeSettings);
+settingsModal.addEventListener("click", (event) => {
+  if (event.target === settingsModal) closeSettings();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && settingsModal.getAttribute("aria-hidden") === "false") {
+    closeSettings();
+  }
+});
+themeSettingButton.addEventListener("click", toggleDarkMode);
+logoutButton.addEventListener("click", async () => {
+  logoutButton.classList.add("loader");
+  logoutButton.setAttribute("aria-busy", "true");
+  try {
+    await logout();
+  } finally {
+    logoutButton.classList.remove("loader");
+    logoutButton.removeAttribute("aria-busy");
+  }
+});
+deleteAccountButton.addEventListener("click", async () => {
+  deleteAccountButton.classList.add("loader");
+  deleteAccountButton.setAttribute("aria-busy", "true");
+  try {
+    await deleteAccount(auth.currentUser);
+    await signOut(auth);
+    window.location.href = "login.html";
+  } finally {
+    deleteAccountButton.classList.remove("loader");
+    deleteAccountButton.removeAttribute("aria-busy");
+  }
+});
+updateThemeSetting();

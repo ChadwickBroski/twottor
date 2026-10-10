@@ -37,15 +37,13 @@ const submitButton = form.querySelector(".login-submit");
 const handlePattern = /^[a-zA-Z0-9_]{3,20}$/;
 
 async function handleIsTaken(handle, exceptUid = null) {
-  const normalizedHandle = handle.trim().toLowerCase();
-  const handleSnapshot = await getDoc(doc(db, "handles", normalizedHandle));
+  const handleSnapshot = await getDoc(doc(db, "handles", handle));
 
   return handleSnapshot.exists() && handleSnapshot.data().uid !== exceptUid;
 }
 
 async function claimHandle(handle, user) {
-  const normalizedHandle = handle.trim().toLowerCase();
-  const handleRef = doc(db, "handles", normalizedHandle);
+  const handleRef = doc(db, "handles", handle);
 
   await runTransaction(db, async (transaction) => {
     const handleSnapshot = await transaction.get(handleRef);
@@ -58,7 +56,7 @@ async function claimHandle(handle, user) {
     if (!handleSnapshot.exists()) {
       transaction.set(handleRef, {
         uid: user.uid,
-        handleLowercase: normalizedHandle,
+        handle,
       });
     }
   });
@@ -173,7 +171,6 @@ googleButton.addEventListener("click", async () => {
       email: result.user.email,
       username,
       handle,
-      handleLowercase: handle.toLowerCase(),
       createdAt: serverTimestamp(),
     }, { merge: true });
     window.location.href = "index.html";

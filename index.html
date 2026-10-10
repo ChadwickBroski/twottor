@@ -42,12 +42,12 @@
       </nav>
       <a class="nav-link user" href="#profile" aria-label="Open profile">
         <i class="fa-solid fa-user"></i>
-        <span id="usernameSpan">Profile</span>
+        <span id="usernameSpan">username</span>
       </a>
       <button class="lightdark-toggle" type="button" aria-label="Enable dark mode" aria-pressed="false">
         <i class="fa-solid fa-moon"></i>
       </button>
-      <button class="settings" type="button" aria-label="Open settings" aria-pressed="false">
+      <button class="settingsButton" type="button" aria-label="Open settings" aria-pressed="false">
         <i class="fa-solid fa-gear"></i>
       </button>
       <p class="version" id="version">v1.0.0</p>
@@ -122,6 +122,50 @@
           <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
         </footer>
       </article>
+    </div>
+    <div class="modal" id="modal" aria-hidden="true">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-title-icon"><i class="fa-solid fa-gear"></i></span>
+            <h2 id="modal-title">Settings</h2>
+          </div>
+          <button class="modal-dismiss" id="close-modal" type="button" aria-label="Close settings">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="setting-row">
+          <span class="setting-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
+          <div class="setting-copy">
+            <strong>Appearance</strong>
+            <span>Switch between light and dark mode.</span>
+          </div>
+          <button id="theme-setting" type="button" aria-pressed="false">Dark mode: Off</button>
+        </div>
+        <div class="setting-row">
+          <span class="setting-icon account-icon"><i class="fa-solid fa-user"></i></span>
+          <div class="setting-copy">
+            <strong>Account</strong>
+            <span>Manage your account settings.</span>
+          </div>
+          <button class="account-logout" id="account-logout" type="button">
+            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+            <span>Log out</span>
+          </button>
+        </div>
+        <div class="setting-row">
+          <span class="setting-icon account-icon"><i class="fa-solid fa-triangle-exclamation" style="color: #f69b9b;"></i></span>
+          <div class="setting-copy">
+            <strong>DANGER ZONE</strong>
+            <span>Perform irreversible actions here.</span>
+          </div>
+          <button class="account-logout" id="account-delete" type="button">
+            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+            <span>Delete Account</span>
+          </button>
+        </div>
+        <p style="font-size: 12px; opacity: 0.5; text-align: center; text-decoration: none;"> &copy; 2026 Twottor 1.0.0 • Made by <a href="chadwickbroski.github.io" style="color:#002CF2;">ChadwickBroski</a>. &bull; <i class="fa-brands fa-github"></i> Hosted on GITHUB</p>
+      </div>
     </div>
     <script type="module" src="src/index.js"></script>
     <script type="module" src="src/feed.js"></script>

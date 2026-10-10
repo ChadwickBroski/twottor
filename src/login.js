@@ -39,7 +39,7 @@ function showMessage(message, isError = false) {
 function getAuthErrorMessage(error) {
   const messages = {
     "auth/invalid-credential": "The email or password is incorrect.",
-    "auth/user-not-found": "The email or password is incorrect.",
+    "auth/user-not-found": "User is not found. Please check your email or sign up.",
     "auth/wrong-password": "The email or password is incorrect.",
     "auth/invalid-email": "Enter a valid email address.",
     "auth/too-many-requests": "Too many attempts. Try again later.",
