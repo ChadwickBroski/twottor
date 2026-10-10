@@ -1,0 +1,95 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                        && request.auth.uid == userId;
+    }
+
+    match /handles/{handle} {
+      allow get: if true;
+      allow list: if false;
+
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasOnly(['uid', 'handle'])
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.handle == handle;
+
+      allow update: if request.auth != null
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.handle == handle;
+
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+                    && request.auth.token.email_verified == true
+                    && request.resource.data.uid == request.auth.uid;
+
+      allow update: if request.auth != null
+                    && (
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'likeCount', 'dislikeCount'])
+                      && request.resource.data.diff(resource.data).affectedKeys().hasAny(['viewCount', 'likeCount', 'dislikeCount'])
+                      && (
+                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['viewCount'])
+                        || (
+                          request.resource.data.viewCount is int
+                          && resource.data.get('viewCount', 0) is int
+                          && request.resource.data.viewCount == resource.data.get('viewCount', 0) + 1
+                        )
+                      )
+                      && (
+                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['likeCount'])
+                        || (
+                          request.resource.data.likeCount is int
+                          && resource.data.get('likeCount', 0) is int
+                          && (
+                            (
+                              request.resource.data.likeCount == resource.data.get('likeCount', 0) + 1
+                              && !get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('likedPosts', []).hasAny([postId])
+                              && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('likedPosts', []).hasAny([postId])
+                            )
+                            ||
+                            (
+                              resource.data.get('likeCount', 0) > 0
+                              && request.resource.data.likeCount == resource.data.get('likeCount', 0) - 1
+                              && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('likedPosts', []).hasAny([postId])
+                              && !getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('likedPosts', []).hasAny([postId])
+                            )
+                          )
+                        )
+                      )
+                      && (
+                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['dislikeCount'])
+                        || (
+                          request.resource.data.dislikeCount is int
+                          && resource.data.get('dislikeCount', 0) is int
+                          && (
+                            (
+                              request.resource.data.dislikeCount == resource.data.get('dislikeCount', 0) + 1
+                              && !get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('dislikedPosts', []).hasAny([postId])
+                              && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('dislikedPosts', []).hasAny([postId])
+                            )
+                            ||
+                            (
+                              resource.data.get('dislikeCount', 0) > 0
+                              && request.resource.data.dislikeCount == resource.data.get('dislikeCount', 0) - 1
+                              && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('dislikedPosts', []).hasAny([postId])
+                              && !getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('dislikedPosts', []).hasAny([postId])
+                            )
+                          )
+                        )
+                      )
+                    );
+
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
+  }
+}
