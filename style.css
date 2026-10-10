@@ -234,7 +234,7 @@ body.dark-mode .version {
   color: #8899a6;
 }
 
-.lightdark-toggle, .settingsButton {
+.settingsButton {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -254,7 +254,7 @@ body.dark-mode .version {
   transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 .settingsButton {
-  left: 65px;
+  left: 19px;
 }
 
 .modal[aria-hidden="true"] {
@@ -518,14 +518,14 @@ body.dark-mode .account-logout:hover {
   background: #a6323f;
 }
 
-.lightdark-toggle:hover, .settingsButton:hover,
-.lightdark-toggle[aria-pressed="true"], .settingsButton[aria-pressed="true"] {
+.settingsButton:hover,
+.settingsButton[aria-pressed="true"] {
   color: #1da1f2;
   background-color: #e8f5fe;
   border-color: #1da1f2;
 }
 
-body.dark-mode .lightdark-toggle, body.dark-mode .settingsButton {
+body.dark-mode .settingsButton {
   color: #f5f5f5;
   background-color: #15202B;
   border-color: #f5f5f5;

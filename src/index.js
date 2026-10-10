@@ -34,7 +34,6 @@ const analytics = getAnalytics(app);
 
 const sidebar = document.querySelector(".sidebar");
 const toggle = document.querySelector(".sidebar-toggle");
-const lightdarkToggle = document.querySelector(".lightdark-toggle");
 const darkMode = localStorage.getItem("darkMode") === "enabled";
 
 const settings = document.querySelector(".settingsButton");
@@ -109,21 +108,13 @@ onAuthStateChanged(auth, (user) => {
 function toggleDarkMode() {
   const darkModeEnabled = document.body.classList.toggle("dark-mode");
   localStorage.setItem("darkMode", darkModeEnabled ? "enabled" : "disabled");
-  const icon = lightdarkToggle.querySelector("i");
   const body = document.getElementById("body");
 
   body.style.background = darkModeEnabled
     ? "linear-gradient(135deg, #15202B 0%, #38444D 100%)"
     : "linear-gradient(135deg, #f7f9fa 0%, #e8f5fe 100%)";
-  lightdarkToggle.setAttribute("aria-pressed", String(darkModeEnabled));
-  lightdarkToggle.setAttribute(
-    "aria-label",
-    darkModeEnabled ? "Disable dark mode" : "Enable dark mode",
-  );
-  lightdarkToggle.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
   toggle.style.backgroundColor = darkModeEnabled ? "#15202B" : "#ffffff";
   toggle.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
-  icon.className = darkModeEnabled ? "fa-solid fa-sun" : "fa-solid fa-moon";
 
   settings.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
   updateThemeSetting();
@@ -144,7 +135,6 @@ toggle.addEventListener("click", () => {
 });
 
 // Settings and dark mode event listeners
-lightdarkToggle.addEventListener("click", toggleDarkMode);
 settings.addEventListener("click", openSettings);
 closeSettingsButton.addEventListener("click", closeSettings);
 settingsModal.addEventListener("click", (event) => {
