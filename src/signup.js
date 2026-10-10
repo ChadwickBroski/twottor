@@ -102,6 +102,8 @@ form.addEventListener("submit", async (event) => {
   }
 
   submitButton.disabled = true;
+  submitButton.classList.add("loader");
+  submitButton.setAttribute("aria-busy", "true");
   submitButton.textContent = "Creating account...";
   showMessage("");
 
@@ -133,10 +135,14 @@ form.addEventListener("submit", async (event) => {
     await signOut(auth);
 
     showMessage("Check your email to verify your account before logging in.");
+    alert("Check your email to verify your account before logging in.");
+    window.location.href = "login.html";
   } catch (error) {
     showMessage(authError(error), true);
   } finally {
     submitButton.disabled = false;
+    submitButton.classList.remove("loader");
+    submitButton.removeAttribute("aria-busy");
     submitButton.textContent = "Create account";
   }
 });
@@ -154,6 +160,8 @@ googleButton.addEventListener("click", async () => {
   }
 
   googleButton.disabled = true;
+  googleButton.classList.add("loader");
+  googleButton.setAttribute("aria-busy", "true");
   googleButton.querySelector("span").textContent = "Connecting...";
   showMessage("");
 
@@ -181,6 +189,8 @@ googleButton.addEventListener("click", async () => {
     showMessage(authError(error), true);
   } finally {
     googleButton.disabled = false;
+    googleButton.classList.remove("loader");
+    googleButton.removeAttribute("aria-busy");
     googleButton.querySelector("span").textContent = "Sign up with Google";
   }
 });

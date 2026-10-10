@@ -721,6 +721,41 @@ body.dark-mode .post-actions button:hover {
   transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
 
+.google-login.loader,
+.login-submit.loader {
+  position: relative;
+  pointer-events: none;
+}
+
+.google-login.loader > *,
+.login-submit.loader {
+  color: transparent;
+}
+
+.google-login.loader > * {
+  visibility: hidden;
+}
+
+.google-login.loader::before,
+.login-submit.loader::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -10px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: compose-spin 700ms linear infinite;
+}
+
+.google-login.loader::before {
+  border-color: rgba(29, 161, 242, 0.25);
+  border-top-color: #1da1f2;
+}
+
 .google-login {
   color: #17202a;
   background: #ffffff;

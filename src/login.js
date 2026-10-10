@@ -72,6 +72,8 @@ loginForm.addEventListener("submit", async (event) => {
   const password = document.querySelector("#password").value;
 
   submitButton.disabled = true;
+  submitButton.classList.add("loader");
+  submitButton.setAttribute("aria-busy", "true");
   submitButton.textContent = "Logging in...";
   showMessage("");
 
@@ -88,12 +90,16 @@ loginForm.addEventListener("submit", async (event) => {
       true,
     );
     submitButton.disabled = false;
+    submitButton.classList.remove("loader");
+    submitButton.removeAttribute("aria-busy");
     submitButton.textContent = "Log in";
   }
 });
 
 googleButton.addEventListener("click", async () => {
   googleButton.disabled = true;
+  googleButton.classList.add("loader");
+  googleButton.setAttribute("aria-busy", "true");
   googleButton.querySelector("span").textContent = "Connecting...";
   showMessage("");
 
@@ -104,6 +110,8 @@ googleButton.addEventListener("click", async () => {
   } catch (error) {
     showMessage(getAuthErrorMessage(error), true);
     googleButton.disabled = false;
+    googleButton.classList.remove("loader");
+    googleButton.removeAttribute("aria-busy");
     googleButton.querySelector("span").textContent = "Continue with Google";
   }
 });
