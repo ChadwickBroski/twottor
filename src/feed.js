@@ -217,7 +217,19 @@ async function flushPendingChanges() {
     });
   } catch (error) {
     viewedPostsToSave.forEach(([postId, authorId]) => pendingViewCounts.set(postId, authorId));
-    console.error("Error saving pending post views and reactions:", error);
+    console.error("Error saving pending post views and reactions:\n" + JSON.stringify({
+      code: error.code,
+      message: error.message,
+      currentUserId: auth.currentUser?.uid,
+      posts: [...postUpdates].map(([postId, updates]) => ({
+        postId,
+        fields: Object.keys(updates),
+      })),
+      users: [...userDocumentUpdates].map(([userId, updates]) => ({
+        userId,
+        fields: Object.keys(updates),
+      })),
+    }, null, 2), error);
   } finally {
     isFlushingPendingChanges = false;
     if (reactionChangesToSave.length) {

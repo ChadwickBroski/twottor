@@ -12,9 +12,9 @@ service cloud.firestore {
                       || (
                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalLikes', 'totalDislikes', 'totalViews'])
                         && request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalLikes', 'totalDislikes', 'totalViews'])
-                        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalLikes']) || request.resource.data.totalLikes is int)
-                        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalDislikes']) || request.resource.data.totalDislikes is int)
-                        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalViews']) || request.resource.data.totalViews is int)
+                        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalLikes']) || request.resource.data.totalLikes is int || request.resource.data.totalLikes is float)
+                        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalDislikes']) || request.resource.data.totalDislikes is int || request.resource.data.totalDislikes is float)
+                        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalViews']) || request.resource.data.totalViews is int || request.resource.data.totalViews is float)
                       )
                     );
     }
@@ -40,6 +40,10 @@ service cloud.firestore {
     match /posts/{postId} {
       allow read: if true;
 
+      function isNumeric(value) {
+        return value is int || value is float;
+      }
+
       allow create: if request.auth != null
                     && request.auth.token.email_verified == true
                     && request.resource.data.uid == request.auth.uid;
@@ -51,9 +55,13 @@ service cloud.firestore {
                       && (
                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['viewCount'])
                         || (
-                          request.resource.data.viewCount is int
-                          && resource.data.get('viewCount', 0) is int
-                          && request.resource.data.viewCount == resource.data.get('viewCount', 0) + 1
+                          isNumeric(request.resource.data.viewCount)
+                          && (
+                            (isNumeric(resource.data.get('viewCount', 0))
+                              && request.resource.data.viewCount == resource.data.get('viewCount', 0) + 1)
+                            || (!isNumeric(resource.data.get('viewCount', 0))
+                              && request.resource.data.viewCount == 1)
+                          )
                         )
                       )
                       && (
