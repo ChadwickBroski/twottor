@@ -23,13 +23,13 @@
           <i class="fa-solid fa-house"></i>
           <span>Home</span>
         </a>
-        <a class="nav-link" href="#explore">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <span>Explore</span>
+        <a class="nav-link" href="#trending">
+          <i class="fa-solid fa-fire"></i>
+          <span>Trending</span>
         </a>
-        <a class="nav-link" href="#notifications">
-          <i class="fa-solid fa-bell"></i>
-          <span>Notifications</span>
+        <a class="nav-link" href="#leaderboard">
+          <i class="fa-solid fa-ranking-star"></i>
+          <span>Leaderboard</span>
         </a>
         <a class="nav-link" href="#messages">
           <i class="fa-solid fa-envelope"></i>
@@ -49,12 +49,13 @@
       </button>
       <p class="version" id="version">v1.0.0</p>
     </aside>
-    <textarea class="post-container" rows="4" placeholder="Write down your thoughts"></textarea>
-    <a class="compose-button" href="#compose" id="post-button">
-      <i class="fa-solid fa-feather-pointed"></i>
-      <span>Post</span>
-    </a>
-    <div id="feed">
+    <main id="home-view">
+      <textarea class="post-container" rows="4" placeholder="Write down your thoughts"></textarea>
+      <a class="compose-button" href="#compose" id="post-button">
+        <i class="fa-solid fa-feather-pointed"></i>
+        <span>Post</span>
+      </a>
+      <div id="feed">
       <article class="post">
         <header class="post-header">
           <strong>Alex Johnson</strong>
@@ -119,7 +120,22 @@
           <button><i class="fa-regular fa-thumbs-up"></i>Like</button>
         </footer>
       </article>
-    </div>
+      </div>
+    </main>
+
+    <!-- Trending -->
+    <main id="trending-view" hidden>
+      <h1>Trending</h1>
+      <hr>
+    </main>
+
+    <!-- Leaderboard -->
+    <main id="leaderboard-view" hidden>
+      <h1>Leaderboard</h1>
+      <hr>
+    </main>
+
+    <!-- Settings Modal -->
     <div class="modal" id="modal" aria-hidden="true">
       <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
         <div class="modal-header">
@@ -166,6 +182,8 @@
     </div>
     <script type="module" src="src/index.js"></script>
     <script type="module" src="src/feed.js"></script>
+    <script type="module" src="src/trending.js"></script>
+    <script type="module" src="src/leaderboard.js"></script>
     <script type="module" src="src/post.js"></script>
   </body>
 </html>

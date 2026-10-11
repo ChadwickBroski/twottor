@@ -129,6 +129,9 @@ form.addEventListener("submit", async (event) => {
       email: result.user.email,
       username,
       handle,
+      totalLikes: 0,
+      totalDislikes: 0,
+      totalViews: 0,
       createdAt: serverTimestamp(),
     });
     await sendEmailVerification(result.user);
@@ -179,6 +182,9 @@ googleButton.addEventListener("click", async () => {
       email: result.user.email,
       username,
       handle,
+      totalLikes: 0,
+      totalDislikes: 0,
+      totalViews: 0,
       createdAt: serverTimestamp(),
     }, { merge: true });
     window.location.href = "index.html";

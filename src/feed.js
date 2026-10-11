@@ -36,25 +36,50 @@ const analytics = getAnalytics(app);
 const viewedPostIds = new Set();
 const likedPostIds = new Set();
 const dislikedPostIds = new Set();
-const pendingViewCounts = new Set();
+const pendingViewCounts = new Map();
 const pendingReactionChanges = new Map();
 const persistedLikedPostIds = new Set();
 const persistedDislikedPostIds = new Set();
 let isFlushingPendingChanges = false;
 
+function updateDisplayScore(postElement) {
+  const likes = Number(postElement.dataset.likes) || 0;
+  const dislikes = Number(postElement.dataset.dislikes) || 0;
+  const views = Number(postElement.dataset.views) || 0;
+  const createdAt = Number(postElement.dataset.createdAt);
+  const ageHours = Math.max(0, (Date.now() - createdAt) / 3600000);
+  const trendingScore = ((likes - dislikes) / (likes + dislikes + 5)) * Math.log1p(views);
+
+  postElement.dataset.displayScore = String(trendingScore * Math.pow(0.5, ageHours / 168));
+}
+
 async function flushPendingChanges() {
   if (isFlushingPendingChanges || (pendingViewCounts.size === 0 && pendingReactionChanges.size === 0)) return;
 
   isFlushingPendingChanges = true;
-  const viewedPostIdsToSave = [...pendingViewCounts];
+  const viewedPostsToSave = [...pendingViewCounts.entries()];
   const reactionChangesToSave = [...pendingReactionChanges.entries()];
   pendingViewCounts.clear();
+  let didCommit = false;
 
   const batch = writeBatch(db);
   const postUpdates = new Map();
   const userUpdates = new Map();
-  viewedPostIdsToSave.forEach((postId) => {
+  const userStatDeltas = new Map();
+  const addUserStatDelta = (userId, field, delta) => {
+    if (!userId || delta === 0) return;
+    const userStats = userStatDeltas.get(userId) ?? {
+      totalLikes: 0,
+      totalDislikes: 0,
+      totalViews: 0,
+    };
+    userStats[field] += delta;
+    userStatDeltas.set(userId, userStats);
+  };
+
+  viewedPostsToSave.forEach(([postId, authorId]) => {
     postUpdates.set(postId, { ...(postUpdates.get(postId) ?? {}), viewCount: increment(1) });
+    addUserStatDelta(authorId, "totalViews", 1);
   });
   reactionChangesToSave.forEach(([postId, change]) => {
     const wasLiked = persistedLikedPostIds.has(postId);
@@ -76,17 +101,55 @@ async function flushPendingChanges() {
     const updates = postUpdates.get(postId) ?? {};
     if (change.isLiked !== wasLiked) {
       updates.likeCount = increment(change.isLiked ? 1 : -1);
+      addUserStatDelta(change.authorId, "totalLikes", change.isLiked ? 1 : -1);
     }
     if (change.isDisliked !== wasDisliked) {
       updates.dislikeCount = increment(change.isDisliked ? 1 : -1);
+      addUserStatDelta(change.authorId, "totalDislikes", change.isDisliked ? 1 : -1);
     }
     postUpdates.set(postId, updates);
   });
+
+  const userDocumentUpdates = new Map();
   userUpdates.forEach((userUpdate, userId) => {
-    batch.update(doc(db, "users", userId), {
+    userDocumentUpdates.set(userId, {
       likedPosts: [...userUpdate.likedPosts],
       dislikedPosts: [...userUpdate.dislikedPosts],
     });
+  });
+
+  const userStatBaselines = new Map();
+  await Promise.all([...userStatDeltas.keys()].map(async (userId) => {
+    const userSnapshot = await getDoc(doc(db, "users", userId));
+    const userData = userSnapshot.exists() ? userSnapshot.data() : {};
+    const hasTotals = [userData.totalLikes, userData.totalDislikes, userData.totalViews]
+      .every((value) => Number.isSafeInteger(value) && value >= 0);
+    if (hasTotals) return;
+
+    const userPostsSnapshot = await getDocs(
+      query(collection(db, "posts"), where("uid", "==", userId)),
+    );
+    const totals = userPostsSnapshot.docs.reduce((sum, postDocument) => {
+      const post = postDocument.data();
+      sum.totalLikes += Number.isSafeInteger(post.likeCount) && post.likeCount > 0 ? post.likeCount : 0;
+      sum.totalDislikes += Number.isSafeInteger(post.dislikeCount) && post.dislikeCount > 0 ? post.dislikeCount : 0;
+      sum.totalViews += Number.isSafeInteger(post.viewCount) && post.viewCount > 0 ? post.viewCount : 0;
+      return sum;
+    }, { totalLikes: 0, totalDislikes: 0, totalViews: 0 });
+    userStatBaselines.set(userId, totals);
+  }));
+
+  userStatDeltas.forEach((stats, userId) => {
+    const updates = userDocumentUpdates.get(userId) ?? {};
+    const baseline = userStatBaselines.get(userId);
+    Object.entries(stats).forEach(([field, delta]) => {
+      if (baseline) updates[field] = baseline[field] + delta;
+      else if (delta !== 0) updates[field] = increment(delta);
+    });
+    userDocumentUpdates.set(userId, updates);
+  });
+  userDocumentUpdates.forEach((updates, userId) => {
+    batch.update(doc(db, "users", userId), updates);
   });
   postUpdates.forEach((updates, postId) => {
     if (Object.keys(updates).length) {
@@ -96,15 +159,46 @@ async function flushPendingChanges() {
 
   const likeButtons = [...document.querySelectorAll("#feed .like-button")];
   const dislikeButtons = [...document.querySelectorAll("#feed .dislike-button")];
-  likeButtons.forEach((button) => {
-    button.disabled = true;
-  });
-  dislikeButtons.forEach((button) => {
-    button.disabled = true;
-  });
+  if (reactionChangesToSave.length) {
+    likeButtons.forEach((button) => {
+      button.disabled = true;
+    });
+    dislikeButtons.forEach((button) => {
+      button.disabled = true;
+    });
+  }
 
   try {
     await batch.commit();
+    didCommit = true;
+    try {
+      const cacheKey = "twottor.leaderboard.users.v2";
+      const cachedUsers = JSON.parse(localStorage.getItem(cacheKey) ?? "null");
+      if (Array.isArray(cachedUsers)) {
+        const updatedUsers = cachedUsers.map((user) => {
+          const deltas = userStatDeltas.get(user.uid);
+          if (!deltas) return user;
+
+          const baseline = userStatBaselines.get(user.uid);
+          return {
+            ...user,
+            totalLikes: baseline
+              ? baseline.totalLikes + deltas.totalLikes
+              : Math.max(0, (Number.isSafeInteger(user.totalLikes) ? user.totalLikes : 0) + deltas.totalLikes),
+            totalDislikes: baseline
+              ? baseline.totalDislikes + deltas.totalDislikes
+              : Math.max(0, (Number.isSafeInteger(user.totalDislikes) ? user.totalDislikes : 0) + deltas.totalDislikes),
+            totalViews: baseline
+              ? baseline.totalViews + deltas.totalViews
+              : Math.max(0, (Number.isSafeInteger(user.totalViews) ? user.totalViews : 0) + deltas.totalViews),
+          };
+        });
+        localStorage.setItem(cacheKey, JSON.stringify(updatedUsers));
+      }
+    } catch (error) {
+      console.warn("Unable to update cached leaderboard totals:", error);
+    }
+
     reactionChangesToSave.forEach(([postId, change]) => {
       if (change.isLiked) {
         persistedLikedPostIds.add(postId);
@@ -122,16 +216,21 @@ async function flushPendingChanges() {
       }
     });
   } catch (error) {
-    viewedPostIdsToSave.forEach((postId) => pendingViewCounts.add(postId));
+    viewedPostsToSave.forEach(([postId, authorId]) => pendingViewCounts.set(postId, authorId));
     console.error("Error saving pending post views and reactions:", error);
   } finally {
     isFlushingPendingChanges = false;
-    likeButtons.forEach((button) => {
-      button.disabled = !auth.currentUser;
-    });
-    dislikeButtons.forEach((button) => {
-      button.disabled = !auth.currentUser;
-    });
+    if (reactionChangesToSave.length) {
+      likeButtons.forEach((button) => {
+        button.disabled = !auth.currentUser;
+      });
+      dislikeButtons.forEach((button) => {
+        button.disabled = !auth.currentUser;
+      });
+    }
+    if (didCommit && (pendingViewCounts.size || pendingReactionChanges.size)) {
+      void flushPendingChanges();
+    }
   }
 }
 
@@ -291,7 +390,11 @@ export async function refreshFeed(currentUser = auth.currentUser) {
         observer.disconnect();
         if (currentUser && !viewedPostIds.has(post.id)) {
           viewedPostIds.add(post.id);
-          pendingViewCounts.add(post.id);
+          pendingViewCounts.set(post.id, post.uid);
+          postElement.dataset.views = String((Number(postElement.dataset.views) || 0) + 1);
+          postElement.querySelector(".view-count").innerHTML = `<i class="fa-regular fa-eye"></i> ${postElement.dataset.views}`;
+          updateDisplayScore(postElement);
+          void flushPendingChanges();
         }
       }
     }, { threshold: 0.5 });
@@ -305,6 +408,11 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     const isDisliked = dislikedPostIds.has(post.id);
     let displayedLikeCount = Math.max(0, likeCount + Number(isLiked) - Number(persistedLikedPostIds.has(post.id)));
     let displayedDislikeCount = Math.max(0, dislikeCount + Number(isDisliked) - Number(persistedDislikedPostIds.has(post.id)));
+    postElement.dataset.likes = String(displayedLikeCount);
+    postElement.dataset.dislikes = String(displayedDislikeCount);
+    postElement.dataset.views = String(Number.isInteger(post.viewCount) ? Math.max(0, post.viewCount) : 0);
+    postElement.dataset.createdAt = String(Number.isFinite(timestampValue) ? timestampValue : Date.now());
+    updateDisplayScore(postElement);
     postElement.innerHTML = `
       <header class="post-header">
         <strong>${authorName} · </strong>
@@ -314,7 +422,7 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       <footer class="post-actions">
         <button class="dislike-button" aria-pressed="${isDisliked}"><i class="fa-${isDisliked ? "solid" : "regular"} fa-thumbs-down"></i> ${displayedDislikeCount}</button>
         <button class="like-button" aria-pressed="${isLiked}"><i class="fa-${isLiked ? "solid" : "regular"} fa-thumbs-up"></i> ${displayedLikeCount}</button>
-        <button><i class="fa-regular fa-eye"></i> ${post.viewCount || 0}</button>
+        <button class="view-count"><i class="fa-regular fa-eye"></i> ${postElement.dataset.views}</button>
       </footer>
     `;
     const likeButton = postElement.querySelector(".like-button");
@@ -345,6 +453,9 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       const finalIsDisliked = dislikedPostIds.has(post.id);
       displayedLikeCount = Math.max(0, displayedLikeCount + Number(finalIsLiked) - Number(isLiked));
       displayedDislikeCount = Math.max(0, displayedDislikeCount + Number(finalIsDisliked) - Number(isDisliked));
+      postElement.dataset.likes = String(displayedLikeCount);
+      postElement.dataset.dislikes = String(displayedDislikeCount);
+      updateDisplayScore(postElement);
       if (
         finalIsLiked === persistedLikedPostIds.has(post.id)
         && finalIsDisliked === persistedDislikedPostIds.has(post.id)
@@ -353,10 +464,12 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       } else {
         pendingReactionChanges.set(post.id, {
           userId: currentUser.uid,
+          authorId: post.uid,
           isLiked: finalIsLiked,
           isDisliked: finalIsDisliked,
         });
       }
+      void flushPendingChanges();
 
       likeButton.setAttribute("aria-pressed", String(finalIsLiked));
       likeButton.innerHTML = `<i class="fa-${finalIsLiked ? "solid" : "regular"} fa-thumbs-up"></i> ${displayedLikeCount}`;

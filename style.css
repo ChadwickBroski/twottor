@@ -13,11 +13,55 @@ body {
 
 body.dark-mode {
   color: #f5f5f5;
-  background-color: #121212;
+  background: linear-gradient(135deg, #15202B 0%, #38444D 100%);
 }
 
 body.sidebar-collapsed {
   padding-left: 76px;
+}
+
+#trending-view {
+  padding: 0;
+  min-height: 100vh;
+  background: inherit;
+}
+
+#trending-view h1 {
+  margin: 20px;
+  margin-bottom: 10px;
+  font-size: 36px;
+}
+
+#trending-view hr {
+  margin: 0 20px 20px;
+  border: none;
+  border-top: 1px solid #e1e8ed;
+}
+
+body.dark-mode #trending-view hr {
+  border-color: #38444d;
+}
+
+#leaderboard-view {
+  padding: 0;
+  min-height: 100vh;
+  background: inherit;
+}
+
+#leaderboard-view h1 {
+  margin: 20px;
+  margin-bottom: 10px;
+  font-size: 36px;
+}
+
+#leaderboard-view hr {
+  margin: 0 20px 20px;
+  border: none;
+  border-top: 1px solid #e1e8ed;
+}
+
+body.dark-mode #leaderboard-view hr {
+  border-color: #38444d;
 }
 
 .sidebar {

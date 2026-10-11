@@ -34,6 +34,8 @@ const analytics = getAnalytics(app);
 
 const sidebar = document.querySelector(".sidebar");
 const toggle = document.querySelector(".sidebar-toggle");
+const navLinks = [...document.querySelectorAll(".nav-links .nav-link")];
+const homeView = document.getElementById("home-view");
 const darkMode = localStorage.getItem("darkMode") === "enabled";
 
 const settings = document.querySelector(".settingsButton");
@@ -43,6 +45,31 @@ const closeSettingsButton = document.getElementById("close-modal");
 const themeSettingButton = document.getElementById("theme-setting");
 const logoutButton = document.getElementById("account-logout");
 const deleteAccountButton = document.getElementById("account-delete");
+
+function updateNavigation() {
+  const currentView = window.location.hash || "#home";
+  const isHome = currentView === "#home";
+  const trendingView = document.getElementById("trending-view");
+  const isTrending = currentView === "#trending";
+  const leaderboardView = document.getElementById("leaderboard-view");
+  const isLeaderboard = currentView === "#leaderboard";
+
+  homeView.hidden = !isHome;
+  trendingView.hidden = !isTrending;
+  leaderboardView.hidden = !isLeaderboard
+  navLinks.forEach((link) => {
+    const isActive = link.hash === currentView;
+    link.classList.toggle("active", isActive);
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
+}
+
+window.addEventListener("hashchange", updateNavigation);
+updateNavigation();
 
 function updateThemeSetting() {
   const isDarkMode = document.body.classList.contains("dark-mode");
@@ -103,16 +130,12 @@ onAuthStateChanged(auth, (user) => {
   if (usernameSpan) {
     usernameSpan.textContent = user.email ?? "";
   }
+
 });
 
 function toggleDarkMode() {
   const darkModeEnabled = document.body.classList.toggle("dark-mode");
   localStorage.setItem("darkMode", darkModeEnabled ? "enabled" : "disabled");
-  const body = document.getElementById("body");
-
-  body.style.background = darkModeEnabled
-    ? "linear-gradient(135deg, #15202B 0%, #38444D 100%)"
-    : "linear-gradient(135deg, #f7f9fa 0%, #e8f5fe 100%)";
   toggle.style.backgroundColor = darkModeEnabled ? "#15202B" : "#ffffff";
   toggle.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
 
