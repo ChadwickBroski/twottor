@@ -53,10 +53,13 @@ function updateNavigation() {
   const isTrending = currentView === "#trending";
   const leaderboardView = document.getElementById("leaderboard-view");
   const isLeaderboard = currentView === "#leaderboard";
+  const profileView = document.getElementById("profile-view");
+  const isProfile = currentView === "#profile";
 
   homeView.hidden = !isHome;
   trendingView.hidden = !isTrending;
   leaderboardView.hidden = !isLeaderboard
+  profileView.hidden = !isProfile;
   navLinks.forEach((link) => {
     const isActive = link.hash === currentView;
     link.classList.toggle("active", isActive);

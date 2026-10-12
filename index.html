@@ -31,10 +31,6 @@
           <i class="fa-solid fa-ranking-star"></i>
           <span>Leaderboard</span>
         </a>
-        <a class="nav-link" href="#messages">
-          <i class="fa-solid fa-envelope"></i>
-          <span>Messages</span>
-        </a>
         <a class="nav-link" href="#profile">
           <i class="fa-solid fa-user"></i>
           <span>Profile</span>
@@ -135,6 +131,10 @@
       <hr>
     </main>
 
+    <main id="profile-view" hidden>
+      <!-- Profile will be added in profile.js -->
+    </main>
+
     <!-- Settings Modal -->
     <div class="modal" id="modal" aria-hidden="true">
       <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
@@ -184,6 +184,7 @@
     <script type="module" src="src/feed.js"></script>
     <script type="module" src="src/trending.js"></script>
     <script type="module" src="src/leaderboard.js"></script>
+    <script type="module" src="src/profile.js"></script>
     <script type="module" src="src/post.js"></script>
   </body>
 </html>
