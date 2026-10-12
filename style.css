@@ -1152,7 +1152,7 @@ body.dark-mode .post-actions button:hover {
   body,
   body.sidebar-collapsed {
     padding-left: 0;
-    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
     font-size: 18px;
   }
 
@@ -1175,9 +1175,23 @@ body.dark-mode .post-actions button:hover {
 
   .logo,
   .nav-link.user,
-  .settingsButton,
   .version {
     display: none;
+  }
+
+  .settingsButton {
+    position: static;
+    display: inline-flex;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 58px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    font-size: 20px;
   }
 
   .nav-links {
@@ -1219,7 +1233,7 @@ body.dark-mode .post-actions button:hover {
   .compose-button {
     position: fixed;
     right: 20px;
-    bottom: calc(82px + env(safe-area-inset-bottom));
+    bottom: calc(108px + env(safe-area-inset-bottom));
     z-index: 9;
     width: 64px;
     height: 64px;
