@@ -144,9 +144,11 @@ async function printUsersOnLeaderboardEntry() {
           <strong>#${index + 1} ${escapeHtml(user.username || "User")}</strong>
           <span>@${escapeHtml(user.handle || "user")}</span>
         </header>
-        <article class="post" style="padding: 10px; padding-left: 20px;"><h3><i class="fa-solid fa-eye"></i> ${totalViews} views</h3></article>
-        <article class="post" style="padding: 10px; padding-left: 20px;"><h3><i class="fa-solid fa-thumbs-up"></i> ${totalLikes} likes</h3></article>
-        <article class="post" style="padding: 10px; padding-left: 20px;"><h3><i class="fa-solid fa-thumbs-down"></i> ${totalDislikes} dislikes</h3></article>
+        <div class="leaderboard-stats">
+          <span><i class="fa-solid fa-eye"></i> ${totalViews} views</span>
+          <span><i class="fa-solid fa-thumbs-up"></i> ${totalLikes} likes</span>
+          <span><i class="fa-solid fa-thumbs-down"></i> ${totalDislikes} dislikes</span>
+        </div>
       `;
       leaderboardView.append(userElement);
     });

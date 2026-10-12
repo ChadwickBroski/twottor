@@ -839,6 +839,29 @@ body.dark-mode .post {
   border: 1px solid #e1e8ed;
 }
 
+.leaderboard-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 14px;
+  color: #657786;
+  font-size: 14px;
+}
+
+.leaderboard-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.leaderboard-stats i {
+  color: #1da1f2;
+}
+
+body.dark-mode .leaderboard-stats {
+  color: #c5d0d9;
+}
+
 .post-actions {
   display: flex;
   gap: 8px;
