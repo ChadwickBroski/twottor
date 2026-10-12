@@ -214,35 +214,45 @@ body.dark-mode #profile-view hr {
 
 @media (max-width: 560px) {
   .profile-shell {
-    padding: 20px 12px 36px;
+    padding: 20px 16px 36px;
   }
 
   .profile-header {
     align-items: flex-start;
-    gap: 14px;
-    padding: 18px;
+    gap: 16px;
+    padding: 20px;
   }
 
   .profile-avatar {
-    width: 56px;
-    font-size: 23px;
+    width: 64px;
+    font-size: 26px;
   }
 
   .profile-identity h1 {
-    font-size: 24px;
+    font-size: 27px;
+  }
+
+  .profile-handle,
+  .profile-joined,
+  .profile-post-actions {
+    font-size: 16px;
   }
 
   .profile-stats {
-    gap: 8px;
+    gap: 10px;
   }
 
   .profile-stat {
-    padding: 12px 9px;
-    column-gap: 6px;
+    padding: 14px 10px;
+    column-gap: 8px;
   }
 
   .profile-stat strong {
-    font-size: 17px;
+    font-size: 19px;
+  }
+
+  .profile-stat span {
+    font-size: 14px;
   }
 }
 
@@ -1117,8 +1127,24 @@ body.dark-mode .post-actions button:hover {
 
 @media (max-width: 520px) {
   .login-card {
-    padding: 30px 24px;
+    padding: 34px 26px;
     border-radius: 20px;
+  }
+
+  .login-heading h1 {
+    font-size: 32px;
+  }
+
+  .login-heading p,
+  .login-form label,
+  .password-label-row a,
+  .signup-prompt {
+    font-size: 16px;
+  }
+
+  .login-divider,
+  .login-message {
+    font-size: 14px;
   }
 }
 
@@ -1126,7 +1152,8 @@ body.dark-mode .post-actions button:hover {
   body,
   body.sidebar-collapsed {
     padding-left: 0;
-    padding-bottom: 80px;
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    font-size: 18px;
   }
 
   .sidebar {
@@ -1166,18 +1193,22 @@ body.dark-mode .post-actions button:hover {
 
   .nav-link span,
   .compose-button span {
-    display: none;
+    display: inline;
   }
 
   .nav-link {
     justify-content: center;
     flex: 1;
     flex-direction: column;
-    gap: 4px;
-    min-height: 48px;
+    gap: 5px;
+    min-height: 58px;
     padding: 8px 4px;
     border-radius: 8px;
-    font-size: 11px;
+    font-size: 12px;
+  }
+
+  .nav-link i {
+    font-size: 21px;
   }
 
   .sidebar.collapsed .nav-link {
@@ -1187,13 +1218,18 @@ body.dark-mode .post-actions button:hover {
 
   .compose-button {
     position: fixed;
-    right: 18px;
-    bottom: calc(80px + env(safe-area-inset-bottom));
+    right: 20px;
+    bottom: calc(82px + env(safe-area-inset-bottom));
     z-index: 9;
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-size: 22px;
+  }
+
+  .compose-button span {
+    display: none;
   }
 }
