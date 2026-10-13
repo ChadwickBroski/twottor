@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@100;200&display=swap" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" />
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
     <title>Twottor</title>
   </head>
@@ -30,6 +30,10 @@
         <a class="nav-link" href="#leaderboard">
           <i class="fa-solid fa-ranking-star"></i>
           <span>Leaderboard</span>
+        </a>
+        <a class="nav-link" href="#macaque">
+          <i class="fa-brands fa-openai"></i>
+          <span id="macaqueSideBar" aria-busy="true">MacaqueAI <span class="loader" aria-hidden="true"></span></span>
         </a>
         <a class="nav-link" href="#profile">
           <i class="fa-solid fa-user"></i>
@@ -131,6 +135,10 @@
       <hr>
     </main>
 
+    <main id="macaque-view" hidden>
+      <!-- Macaque -->
+    </main>
+
     <main id="profile-view" hidden>
       <!-- Profile will be added in profile.js -->
     </main>
@@ -186,5 +194,6 @@
     <script type="module" src="src/leaderboard.js"></script>
     <script type="module" src="src/profile.js"></script>
     <script type="module" src="src/post.js"></script>
+    <script type="module" src="src/macaque.js"></script>
   </body>
 </html>

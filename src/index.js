@@ -53,12 +53,15 @@ function updateNavigation() {
   const isTrending = currentView === "#trending";
   const leaderboardView = document.getElementById("leaderboard-view");
   const isLeaderboard = currentView === "#leaderboard";
+  const macaqueView = document.getElementById("macaque-view");
+  const isMacaque = currentView === "#macaque";
   const profileView = document.getElementById("profile-view");
   const isProfile = currentView === "#profile";
 
   homeView.hidden = !isHome;
   trendingView.hidden = !isTrending;
   leaderboardView.hidden = !isLeaderboard
+  macaqueView.hidden = !isMacaque;
   profileView.hidden = !isProfile;
   navLinks.forEach((link) => {
     const isActive = link.hash === currentView;
@@ -138,6 +141,7 @@ onAuthStateChanged(auth, (user) => {
 
 function toggleDarkMode() {
   const darkModeEnabled = document.body.classList.toggle("dark-mode");
+  document.documentElement.classList.toggle("dark-mode", darkModeEnabled);
   localStorage.setItem("darkMode", darkModeEnabled ? "enabled" : "disabled");
   toggle.style.backgroundColor = darkModeEnabled ? "#15202B" : "#ffffff";
   toggle.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
