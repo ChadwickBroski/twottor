@@ -18,6 +18,7 @@ import {
   getAuth,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { notification } from "./notification.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBCoUU_nUvDyM_m9tcGuYj-qYcmyPFWGTI",
@@ -230,6 +231,9 @@ async function flushPendingChanges() {
         fields: Object.keys(updates),
       })),
     }, null, 2), error);
+    if (reactionChangesToSave.length) {
+      notification("Your reaction couldn't be saved. Please try again.", "failure");
+    }
   } finally {
     isFlushingPendingChanges = false;
     if (reactionChangesToSave.length) {
@@ -498,5 +502,6 @@ export async function refreshFeed(currentUser = auth.currentUser) {
 onAuthStateChanged(auth, (currentUser) => {
   refreshFeed(currentUser).catch((error) => {
     console.error("Unable to load posts:", error);
+    notification("Unable to load posts.", "failure");
   });
 });

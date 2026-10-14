@@ -28,6 +28,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { refreshFeed } from "./feed.js";
+import { notification } from "./notification.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBCoUU_nUvDyM_m9tcGuYj-qYcmyPFWGTI",
@@ -56,18 +57,18 @@ postButton.addEventListener("click", async (event) => {
   const user = auth.currentUser;
 
   if (!user) {
-    alert("Please log in before posting.");
+    notification("Please log in before posting.", "failure");
     return;
   }
   if (!user.emailVerified) {
-    alert("Please verify your email before posting.");
+    notification("Please verify your email before posting.", "failure");
     return;
   }
 
   const text = postContainer.value.trim();
 
   if (!text) {
-    alert("Write something before posting.");
+    notification("Write something before posting.", "failure");
     return;
   }
 
@@ -90,10 +91,16 @@ postButton.addEventListener("click", async (event) => {
     });
 
     postContainer.value = "";
-    await refreshFeed();
+    notification("Post published.", "success");
+    try {
+      await refreshFeed();
+    } catch (error) {
+      console.error("Post was published, but the feed could not refresh:", error);
+      notification("Post published, but the feed couldn't refresh.", "failure");
+    }
   } catch (error) {
     console.error("Error creating post:", error);
-    alert("Unable to create the post.");
+    notification("Unable to create the post.", "failure");
   } finally {
     isPosting = false;
     postButton.classList.remove("loader");

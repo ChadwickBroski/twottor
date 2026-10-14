@@ -41,6 +41,82 @@ body.sidebar-collapsed {
   background-clip: padding-box;
 }
 
+.site-notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 200;
+  width: min(360px, calc(100vw - 40px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.site-notification {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  border: 1px solid #cfd9e0;
+  border-left: 4px solid #1da1f2;
+  border-radius: 8px;
+  color: #17202a;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(14, 24, 32, 0.16);
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  pointer-events: auto;
+  animation: modal-enter 160ms ease-out;
+}
+
+.site-notification:focus-visible {
+  outline: 2px solid #1da1f2;
+  outline-offset: 2px;
+}
+
+.site-notification--success {
+  border-color: #a6d8bd;
+  border-left-color: #16834a;
+}
+
+.site-notification--failure {
+  border-color: #efb4b4;
+  border-left-color: #c62828;
+  background: #fff5f5;
+}
+
+.site-notification.is-dismissing {
+  animation: modal-exit 160ms ease-in forwards;
+}
+
+body.dark-mode .site-notification {
+  border-color: #38444d;
+  border-left-color: #1da1f2;
+  color: #f5f5f5;
+  background: #15202b;
+}
+
+body.dark-mode .site-notification--success {
+  border-color: #315846;
+  border-left-color: #4bc887;
+}
+
+body.dark-mode .site-notification--failure {
+  border-color: #653c40;
+  border-left-color: #ff6b70;
+  background: #2c1b1e;
+}
+
+@media (max-width: 640px) {
+  .site-notifications {
+    top: 12px;
+    right: 12px;
+    width: calc(100vw - 24px);
+  }
+}
+
 html.dark-mode {
   color-scheme: dark;
 }
@@ -606,7 +682,7 @@ body.dark-mode .version {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 160ms ease, visibility 0s linear 160ms;
+  transition: opacity 160ms ease-out, visibility 0s linear 200ms;
 }
 
 .modal {
@@ -784,9 +860,13 @@ body.dark-mode .version {
 }
 
 @keyframes modal-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
   to {
     opacity: 0;
-    transform: translateY(6px) scale(0.99);
+    transform: translateY(4px) scale(0.99);
   }
 }
 

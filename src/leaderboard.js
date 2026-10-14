@@ -6,6 +6,7 @@ import {
   getFirestore,
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { notification } from "./notification.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBCoUU_nUvDyM_m9tcGuYj-qYcmyPFWGTI",
@@ -155,6 +156,7 @@ async function printUsersOnLeaderboardEntry() {
     console.log(users);
   } catch (error) {
     console.error("Unable to load leaderboard users:", error);
+    notification("Unable to load the leaderboard.", "failure");
   }
 }
 

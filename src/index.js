@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+import { notification } from "./notification.js";
 import {
   collection,
   getDocs,
@@ -175,7 +176,14 @@ document.addEventListener("keydown", (event) => {
     closeSettings();
   }
 });
-themeSettingButton.addEventListener("click", toggleDarkMode);
+themeSettingButton.addEventListener("click", () => {
+  toggleDarkMode();
+  notification(
+    document.body.classList.contains("dark-mode")
+      ? "Dark Mode Selected"
+      : "Light Mode Selected",
+  );
+});
 logoutButton.addEventListener("click", async () => {
   logoutButton.classList.add("loader");
   logoutButton.setAttribute("aria-busy", "true");

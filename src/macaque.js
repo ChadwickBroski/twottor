@@ -1,3 +1,5 @@
+import { notification } from "./notification.js";
+
 const macaqueView = document.getElementById("macaque-view");
 
 if (macaqueView && !window.matchMedia("(max-width: 640px)").matches) {
@@ -330,9 +332,13 @@ if (macaqueView && !window.matchMedia("(max-width: 640px)").matches) {
 				chat.scrollTop = chat.scrollHeight;
 			}
 			messages.push({ role: "assistant", content: answer });
+			if (window.location.hash !== "#macaque") {
+				notification("Macaque has finished it's response");		
+			}
 		} catch (error) {
 			console.error(error);
 			assistantMessage.textContent = `Error: ${error.message}`;
+			notification(`Error: ${error.message}`, "failure");
 		} finally {
 			setMacaqueLoading(false);
 			setBusy(false);
@@ -353,10 +359,12 @@ if (macaqueView && !window.matchMedia("(max-width: 640px)").matches) {
 			setSystemPrompt(activeModel);
 			resetConversation();
 			status.textContent = `${activeModel} is ready.`;
+			notification("Macaque Mini is ready", "success");
 		} catch (error) {
 			console.error(error);
 			modelSelect.value = activeModel;
 			status.textContent = `Couldn't load ${requestedModel}. The current model is still ${activeModel}.`;
+			notification(`Couldn't load ${requestedModel}. The current model is still ${activeModel}.`, "failure");
 		} finally {
 			setMacaqueLoading(false);
 			setBusy(false);
@@ -382,12 +390,14 @@ if (macaqueView && !window.matchMedia("(max-width: 640px)").matches) {
 			await engine.reload(models[activeModel].webllmId);
 			setSystemPrompt(activeModel);
 			status.textContent = `${activeModel} is ready.`;
+			notification("Macaque Mini is ready", "success");
 			setMacaqueLoading(false);
 			setBusy(false);
 		})
 		.catch((error) => {
 			console.error(error);
 			status.textContent = "Couldn't load the AI model. Use a WebGPU-compatible browser and try again.";
+			notification("Couldn't load the AI model. Use a WebGPU-compatible browser and try again.", "failure");
 			setMacaqueLoading(false);
 		});
 }
