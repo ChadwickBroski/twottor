@@ -1,6 +1,6 @@
 const macaqueView = document.getElementById("macaque-view");
 
-if (macaqueView) {
+if (macaqueView && !window.matchMedia("(max-width: 640px)").matches) {
 	macaqueView.innerHTML = `
 		<style>
 			#macaque-view .macaque-shell {
