@@ -153,7 +153,6 @@ async function printUsersOnLeaderboardEntry() {
       `;
       leaderboardView.append(userElement);
     });
-    console.log(users);
   } catch (error) {
     console.error("Unable to load leaderboard users:", error);
     notification("Unable to load the leaderboard.", "failure");

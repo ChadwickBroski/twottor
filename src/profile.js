@@ -31,7 +31,6 @@ let recentPosts = [];
 if (authenticatedUser) {
 	const userDocument = await getDoc(doc(db, "users", authenticatedUser.uid));
 	currentUser = userDocument.exists() ? userDocument.data() : {};
-	console.log("Current user document:", currentUser);
 	const postsSnapshot = await getDocs(
 		query(collection(db, "posts"), where("uid", "==", authenticatedUser.uid)),
 	);
@@ -66,14 +65,10 @@ function formatPostAge(value) {
 	return `${Math.floor(seconds / 86400)} days ago`;
 }
 
-console.log(currentUser.createdAt);
 const createdDate = new Date(
   (currentUser.createdAt.seconds + currentUser.createdAt.nanoseconds / 1e9) * 1000
 );
 
-console.log(createdDate);
-
-console.log(createdDate.toLocaleString());
 const profileVIew = document.getElementById("profile-view");
 profileVIew.innerHTML = `
 	<div class="profile-shell">

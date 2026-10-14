@@ -11,8 +11,6 @@ export async function classifyText(postedSentence) {
   );
 
   const classification = await classifier(exampleSentence, topics);
-  console.log("Topic:", classification.labels[0]);
-  console.log("Confidence:", classification.scores[0]);
   return classification.labels[0];
 }
 

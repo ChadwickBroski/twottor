@@ -326,8 +326,6 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     persistedLikedPostIds.clear();
     persistedDislikedPostIds.clear();
 
-    console.log("Posts by current user:", currentUserPosts);
-
     if (currentUserPosts.length > 10 && userInterest) {
       const matchingPostsSnapshot = await getDocs(
         query(
