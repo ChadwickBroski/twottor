@@ -155,6 +155,20 @@ if (darkMode) {
   toggleDarkMode();
 }
 
+if (window.matchMedia("(max-width: 640px)").matches) {
+  const navLinks = document.getElementById("nav-links");
+  const homeButton = document.getElementById("homeButton");
+  const trendingButton = document.getElementById("trendingButton");
+  const leaderboardButton = document.getElementById("leaderboardButton");
+  const profileButton = document.getElementById("profileButton");
+
+  homeButton.innerHTML = `<i class="fa-solid fa-house"></i>`;
+  trendingButton.innerHTML = `<i class="fa-solid fa-fire"></i>`;
+  leaderboardButton.innerHTML = `<i class="fa-solid fa-ranking-star"></i>`;
+  profileButton.innerHTML = `<i class="fa-solid fa-user"></i>`;
+  console.log("mobile");
+}
+
 toggle.addEventListener("click", () => {
   const collapsed = sidebar.classList.toggle("collapsed");
   const version = document.getElementById("version");
