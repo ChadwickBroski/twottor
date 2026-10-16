@@ -50,6 +50,8 @@ const deleteAccountButton = document.getElementById("account-delete");
 function updateNavigation() {
   const currentView = window.location.hash || "#home";
   const isHome = currentView === "#home";
+  const searchView = document.getElementById("search-view");
+  const isSearch = currentView === "#search";
   const trendingView = document.getElementById("trending-view");
   const isTrending = currentView === "#trending";
   const leaderboardView = document.getElementById("leaderboard-view");
@@ -60,6 +62,7 @@ function updateNavigation() {
   const isProfile = currentView === "#profile";
 
   homeView.hidden = !isHome;
+  searchView.hidden = !isSearch;
   trendingView.hidden = !isTrending;
   leaderboardView.hidden = !isLeaderboard
   macaqueView.hidden = !isMacaque;
@@ -77,6 +80,36 @@ function updateNavigation() {
 
 window.addEventListener("hashchange", updateNavigation);
 updateNavigation();
+
+const searchForm = document.getElementById("search-form");
+const searchInput = document.getElementById("search-input");
+const searchClear = document.getElementById("search-clear");
+const searchTabs = [...document.querySelectorAll(".search-tab")];
+
+searchInput?.addEventListener("input", () => {
+  searchClear.hidden = !searchInput.value;
+});
+
+searchClear?.addEventListener("click", () => {
+  searchInput.value = "";
+  searchClear.hidden = true;
+  searchInput.focus();
+});
+
+searchForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  searchInput.focus();
+});
+
+searchTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    searchTabs.forEach((item) => {
+      const selected = item === tab;
+      item.classList.toggle("is-active", selected);
+      item.setAttribute("aria-selected", String(selected));
+    });
+  });
+});
 
 function updateThemeSetting() {
   const isDarkMode = document.body.classList.contains("dark-mode");
@@ -158,12 +191,14 @@ if (darkMode) {
 if (window.matchMedia("(max-width: 640px)").matches) {
   const navLinks = document.getElementById("nav-links");
   const homeButton = document.getElementById("homeButton");
+  const searchButton = document.getElementById("searchButton");
   const trendingButton = document.getElementById("trendingButton");
   const leaderboardButton = document.getElementById("leaderboardButton");
   const macaqueButton = document.getElementById("macaqueButton");
   const profileButton = document.getElementById("profileButton");
 
   homeButton.innerHTML = `<i class="fa-solid fa-house"></i>`;
+  searchButton.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i>`;
   trendingButton.innerHTML = `<i class="fa-solid fa-fire"></i>`;
   leaderboardButton.innerHTML = `<i class="fa-solid fa-ranking-star"></i>`;
   macaqueButton.innerHTML = `<i class="fa-brands fa-openai"></i>`

@@ -23,6 +23,10 @@
           <i class="fa-solid fa-house"></i>
           <span>Home</span>
         </a>
+        <a class="nav-link active" href="#search" aria-current="page" id="searchButton">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>Search</span>
+        </a>
         <a class="nav-link" href="#trending" id="trendingButton">
           <i class="fa-solid fa-fire"></i>
           <span>Trending</span>
@@ -121,6 +125,36 @@
         </footer>
       </article>
       </div>
+    </main>
+
+    <!-- Search -->
+    <main id="search-view" hidden>
+      <h1><i class="fa-solid fa-magnifying-glass"></i> Search</h1>
+      <hr>
+      <section class="search-panel" aria-labelledby="search-title">
+        <form class="search-form" id="search-form">
+          <label class="sr-only" for="search-input">Search Twottor</label>
+          <div class="search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="search-input" type="search" placeholder="Search Twottor" autocomplete="off" />
+            <button id="search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+          <button class="search-submit" type="submit">Search</button>
+        </form>
+        <div class="search-tabs" role="tablist" aria-label="Search type">
+          <button class="search-tab is-active" type="button" role="tab" aria-selected="true">All</button>
+          <button class="search-tab" type="button" role="tab" aria-selected="false">Posts</button>
+          <button class="search-tab" type="button" role="tab" aria-selected="false">People</button>
+          <button class="search-tab" type="button" role="tab" aria-selected="false">Hashtags</button>
+        </div>
+        <div class="search-results" id="search-results" aria-live="polite">
+          <i class="fa-solid fa-compass" aria-hidden="true"></i>
+          <strong>Start searching</strong>
+          <span>Your results will appear here.</span>
+        </div>
+      </section>
     </main>
 
     <!-- Trending -->
