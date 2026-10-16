@@ -212,14 +212,6 @@ body.dark-mode #macaque-view hr {
 }
 
 @media (max-width: 560px) {
-  #macaque-view .macaque-shell {
-    min-height: 480px;
-    padding: 18px 14px;
-  }
-
-  #macaque-view .macaque-composer {
-    flex-wrap: wrap;
-  }
 
   #macaque-view .macaque-prompt {
     flex-basis: calc(100% - 56px);
@@ -1347,10 +1339,6 @@ body.dark-mode .post-actions button:hover {
 }
 
 @media (max-width: 640px) {
-  .nav-link[href="#macaque"] {
-    display: none;
-  }
-
   body,
   body.sidebar-collapsed {
     padding-left: 0;
@@ -1364,10 +1352,6 @@ body.dark-mode .post-actions button:hover {
     min-height: 0;
   }
 
-  #macaque-view .macaque-model {
-    display: none;
-  }
-
   body #macaque-view .macaque-prompt {
     min-height: 58px;
   }
@@ -1379,7 +1363,7 @@ body.dark-mode .post-actions button:hover {
     box-sizing: border-box;
     min-height: auto;
     align-items: center;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     font-size: 50px;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
     border-top: 1px solid #e1e8ed;
