@@ -142,7 +142,10 @@ async function printUsersOnLeaderboardEntry() {
       const totalViews = Number.isSafeInteger(user.totalViews) ? user.totalViews : 0;
       userElement.innerHTML = `
         <header class="post-header">
-          <strong>#${index + 1} ${escapeHtml(user.username || "User")}</strong>
+          <strong>#${index + 1} ${escapeHtml(user.username || "User")} 
+          ${user.handle === "abhay" ? ' <i class="fa-solid fa-user-tie" aria-label="Owner" style="font-size: 12px;background-color:#1E2933; padding: 5px; cursor:pointer; color: #1A96E4;  border-radius: 999px;" title="Owner"></i>' : ""}
+          ${user.handle === "abhay" ? ' <i class="fa-solid fa-code" aria-label="Developer" style="font-size: 12px;background-color:#1E2933; padding: 5px; cursor:pointer; color: #1A96E4;  border-radius: 999px;" title="Developer"></i>' : ""}
+          </strong>
           <span>@${escapeHtml(user.handle || "user")}</span>
         </header>
         <div class="leaderboard-stats">
