@@ -76,8 +76,8 @@ profileVIew.innerHTML = `
 			<div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
 			<div class="profile-identity">
 				<h1>${escapeProfileText(currentUser.username)}  
-				${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-user-tie" aria-label="Owner" style="font-size: 18px;background-color:#1E2933; padding: 8px; cursor:pointer; color: #1A96E4;  border-radius: 999px;" title="Owner"></i>' : ""}
-        ${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-code" aria-label="Developer" style="font-size: 18px;background-color:#1E2933; padding: 8px; cursor:pointer; color: #1A96E4;  border-radius: 999px;" title="Developer"></i>' : ""}
+				${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" style="font-size:18px;" aria-label="Owner" title="Owner"></i>' : ""}
+        ${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" style="font-size:18px;" aria-label="Developer" title="Developer"></i>' : ""}
 				</h1>
 				<p class="profile-handle">@${escapeProfileText(currentUser.handle)}</p>
 				<p class="profile-joined"><i class="fa-solid fa-calendar"></i>  Joined ${createdDate.toLocaleDateString()}</p>

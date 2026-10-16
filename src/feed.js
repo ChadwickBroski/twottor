@@ -430,8 +430,8 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     postElement.innerHTML = `
       <header class="post-header">
         <strong>${authorName}
-          ${authorHandle === "abhay" ? ' <i class="fa-solid fa-user-tie" aria-label="Owner" style="font-size: 12px;background-color:#1E2933; padding: 5px; cursor:pointer; color: #1A96E4;  border-radius: 999px;" title="Owner"></i>' : ""}
-          ${authorHandle === "abhay" ? ' <i class="fa-solid fa-code" aria-label="Developer" style="font-size: 12px;background-color:#1E2933; padding: 5px; cursor:pointer; color: #1A96E4;  border-radius: 999px;" title="Developer"></i>' : ""}
+          ${authorHandle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
+          ${authorHandle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""}
         · </strong>
         <span>@${authorHandle} · ${createdAtText}</span>
       </header>
