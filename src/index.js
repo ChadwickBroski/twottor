@@ -81,36 +81,6 @@ function updateNavigation() {
 window.addEventListener("hashchange", updateNavigation);
 updateNavigation();
 
-const searchForm = document.getElementById("search-form");
-const searchInput = document.getElementById("search-input");
-const searchClear = document.getElementById("search-clear");
-const searchTabs = [...document.querySelectorAll(".search-tab")];
-
-searchInput?.addEventListener("input", () => {
-  searchClear.hidden = !searchInput.value;
-});
-
-searchClear?.addEventListener("click", () => {
-  searchInput.value = "";
-  searchClear.hidden = true;
-  searchInput.focus();
-});
-
-searchForm?.addEventListener("submit", (event) => {
-  event.preventDefault();
-  searchInput.focus();
-});
-
-searchTabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    searchTabs.forEach((item) => {
-      const selected = item === tab;
-      item.classList.toggle("is-active", selected);
-      item.setAttribute("aria-selected", String(selected));
-    });
-  });
-});
-
 function updateThemeSetting() {
   const isDarkMode = document.body.classList.contains("dark-mode");
   themeSettingButton.setAttribute("aria-pressed", String(isDarkMode));

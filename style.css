@@ -162,7 +162,6 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 #search-view {
   padding: 0;
   min-height: 100vh;
-  background: inherit;
 }
 
 .sr-only {
@@ -178,6 +177,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 }
 
 #search-view h1 {
+  padding: 5px;
   margin: 20px;
   margin-bottom: 10px;
   font-size: 36px;
@@ -190,8 +190,8 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 }
 
 .search-panel {
-  width: min(720px, calc(100% - 40px));
-  margin: 36px auto;
+  width: calc(100% - 40px);
+  margin: 36px 20px;
 }
 
 .search-panel h2 {
@@ -207,7 +207,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 
 .search-form {
   display: flex;
-  max-width: 720px;
+  width: 100%;
   gap: 12px;
 }
 
@@ -244,9 +244,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 }
 
 .search-input-wrap button {
-  display: grid;
-  width: 26px;
-  height: 26px;
+  padding: 10px;
   place-items: center;
   border: 0;
   border-radius: 50%;
@@ -278,7 +276,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 .search-tabs {
   display: flex;
   gap: 6px;
-  max-width: 720px;
+  width: 100%;
   margin: 28px 0 0;
   border-bottom: 1px solid #e1e8ed;
 }
@@ -301,7 +299,7 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 
 .search-results {
   display: grid;
-  max-width: 720px;
+  width: 100%;
   min-height: 190px;
   margin-top: 20px;
   place-content: center;
@@ -322,6 +320,12 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
 
 .search-results strong {
   color: #17202a;
+}
+
+.search-results > .post {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
 }
 
 body.dark-mode .search-subtitle,
@@ -387,7 +391,6 @@ body.dark-mode #search-view hr {
 #trending-view {
   padding: 0;
   min-height: 100vh;
-  background: inherit;
 }
 
 #trending-view h1 {
@@ -409,7 +412,6 @@ body.dark-mode #trending-view hr {
 #leaderboard-view {
   padding: 0;
   min-height: 100vh;
-  background: inherit;
 }
 
 #leaderboard-view h1 {
@@ -431,7 +433,6 @@ body.dark-mode #leaderboard-view hr {
 #macaque-view {
   padding: 0;
   min-height: 100vh;
-  background: inherit;
 }
 
 #macaque-view h1 {
@@ -461,7 +462,6 @@ body.dark-mode #macaque-view hr {
 #profile-view {
   padding: 1px 0;
   min-height: 100vh;
-  background: inherit;
 }
 
 .profile-shell {
@@ -1698,7 +1698,7 @@ body.dark-mode .post-actions button:hover {
     box-sizing: border-box;
     min-height: auto;
     align-items: center;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     font-size: 50px;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
     border-top: 1px solid #e1e8ed;

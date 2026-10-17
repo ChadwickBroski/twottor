@@ -33,6 +33,25 @@ if (macaqueView) {
 				color: #17202a;
 			}
 
+			.macaque-prompt {
+				display: flex;
+				min-height: 52px;
+				flex: 1;
+				align-items: center;
+				outline: none;
+				gap: 10px;
+				padding: 0 14px;
+				border: 1px solid #c5d0d9;
+				border-radius: 999px;
+				background: #ffffff;
+				transition: border-color 160ms ease, box-shadow 160ms ease;
+			}
+
+			.macaque-prompt:focus-within {
+				border-color: #1da1f2;
+				box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.14);
+			}
+
 			#macaque-view .macaque-header {
 				text-align: center;
 			}
@@ -216,7 +235,6 @@ if (macaqueView) {
 				cursor: not-allowed;
 			}
 
-			#macaque-view .macaque-prompt:focus-visible,
 			#macaque-view .macaque-model:focus-visible,
 			#macaque-view .macaque-model-trigger:focus-visible,
 			#macaque-view .macaque-send:focus-visible {
@@ -445,7 +463,7 @@ if (macaqueView) {
 	function setSystemPrompt(modelName) {
 		messages = [{
 			role: "system",
-			content: `You are ${modelName}, a friendly and truthful AI chatbot. You are helpful, creative, clever, and friendly. If you don't know the answer to something, answer and say that you are not sure about the answer and the user should double-check.`,
+			content: `You are ${modelName}, a friendly and truthful AI chatbot. You are helpful, creative, clever, and friendly. You keep answers short and concise (because there is only a 2048 token window). If you don't know the answer to something, answer and say that you are not sure about the answer and the user should double-check.`,
 		}];
 	}
 
