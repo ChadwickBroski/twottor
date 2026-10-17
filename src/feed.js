@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
 import { classifyText } from "./post.js";
 import {
+  addDoc,
   collection,
   getDocs,
   doc,
@@ -12,6 +13,7 @@ import {
   where,
   orderBy,
   increment,
+  serverTimestamp,
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import {
@@ -47,11 +49,13 @@ function updateDisplayScore(postElement) {
   const likes = Number(postElement.dataset.likes) || 0;
   const dislikes = Number(postElement.dataset.dislikes) || 0;
   const views = Number(postElement.dataset.views) || 0;
+  const replies = Number(postElement.dataset.replies) || 0;
   const createdAt = Number(postElement.dataset.createdAt);
   const ageHours = Math.max(0, (Date.now() - createdAt) / 3600000);
   const trendingScore = ((likes - dislikes) / (likes + dislikes + 5)) * Math.log1p(views);
+  const replyBoost = Math.log1p(replies) * 0.35;
 
-  postElement.dataset.displayScore = String(trendingScore * Math.pow(0.5, ageHours / 168));
+  postElement.dataset.displayScore = String((trendingScore + replyBoost) * Math.pow(0.5, ageHours / 168));
 }
 
 async function flushPendingChanges() {
@@ -273,6 +277,56 @@ function escapeHtml(value) {
   });
 }
 
+function formatReplyTime(value) {
+  let timestamp;
+  if (value?.toDate instanceof Function) {
+    timestamp = value.toDate();
+  } else if (typeof value?.seconds === "number") {
+    timestamp = new Date(value.seconds * 1000 + (value.nanoseconds ?? 0) / 1e6);
+  } else if (value) {
+    timestamp = new Date(value);
+  }
+  if (!timestamp || Number.isNaN(timestamp.getTime())) return "just now";
+
+  const seconds = Math.max(0, (Date.now() - timestamp.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+}
+
+async function loadReplies(postId, repliesContainer, showRepliesButton) {
+  const repliesSnapshot = await getDocs(
+    query(collection(db, "posts", postId, "replies"), orderBy("createdAt", "asc")),
+  );
+  repliesContainer.innerHTML = repliesSnapshot.docs.map((replyDocument) => {
+    const reply = replyDocument.data();
+    return `<div class="post-reply">
+      <strong>${escapeHtml(reply.username || reply.userEmail || "User")}
+          ${reply.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" style="font-size: 10px; padding:4px;" aria-label="Owner" title="Owner"></i>' : ""}
+          ${reply.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" style="font-size: 10px; padding:4px;" aria-label="Developer" title="Developer"></i>' : ""} ·
+      </strong>
+      <span>@${escapeHtml(reply.handle || "user")} · ${formatReplyTime(reply.createdAt)}</span>
+      <p>${escapeHtml(reply.text)}</p>
+    </div>`;
+  }).join("");
+  if (repliesSnapshot.empty) {
+    repliesContainer.closest(".post").dataset.replies = "0";
+    showRepliesButton.hidden = true;
+    repliesContainer.hidden = true;
+    return;
+  }
+  const postElement = repliesContainer.closest(".post");
+  postElement.dataset.replies = String(repliesSnapshot.size);
+  updateDisplayScore(postElement);
+  showRepliesButton.hidden = false;
+  const isExpanded = repliesContainer.dataset.expanded === "true";
+  repliesContainer.hidden = !isExpanded;
+  showRepliesButton.innerHTML = isExpanded
+    ? '<i class="fa-solid fa-chevron-up"></i> Hide replies'
+    : `<i class="fa-solid fa-chevron-down"></i> Show replies (${repliesSnapshot.size})`;
+}
+
 export async function refreshFeed(currentUser = auth.currentUser) {
   const feedContainer = document.getElementById("feed");
 
@@ -437,11 +491,73 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       </header>
       <p class="post-content">${escapeHtml(post.text)}</p>
       <footer class="post-actions">
+        <button class="reply-button" type="button" aria-expanded="false"><i class="fa-solid fa-reply"></i> Reply</button>
         <button class="dislike-button" aria-pressed="${isDisliked}"><i class="fa-${isDisliked ? "solid" : "regular"} fa-thumbs-down"></i> ${displayedDislikeCount}</button>
         <button class="like-button" aria-pressed="${isLiked}"><i class="fa-${isLiked ? "solid" : "regular"} fa-thumbs-up"></i> ${displayedLikeCount}</button>
         <button class="view-count"><i class="fa-regular fa-eye"></i> ${postElement.dataset.views}</button>
       </footer>
+      <form class="reply-form" hidden>
+        <textarea rows="2" maxlength="280" placeholder="Write a reply..." required></textarea>
+        <button type="submit"><i class="fa-solid fa-paper-plane"></i> Send</button>
+      </form>
+      <button class="post-replies-toggle" type="button" hidden></button>
+      <div class="post-replies" hidden></div>
     `;
+    const replyButton = postElement.querySelector(".reply-button");
+    const replyForm = postElement.querySelector(".reply-form");
+    const replyInput = replyForm.querySelector("textarea");
+    const showRepliesButton = postElement.querySelector(".post-replies-toggle");
+    const repliesContainer = postElement.querySelector(".post-replies");
+    showRepliesButton.addEventListener("click", () => {
+      const isExpanded = repliesContainer.dataset.expanded === "true";
+      repliesContainer.dataset.expanded = String(!isExpanded);
+      void loadReplies(post.id, repliesContainer, showRepliesButton);
+    });
+    loadReplies(post.id, repliesContainer, showRepliesButton).catch((error) => {
+      console.error("Unable to load replies:", error);
+    });
+    replyButton.addEventListener("click", () => {
+      if (!currentUser) {
+        notification("Please log in before replying.", "failure");
+        return;
+      }
+      const isOpen = !replyForm.hidden;
+      replyForm.hidden = isOpen;
+      replyButton.setAttribute("aria-expanded", String(!isOpen));
+      if (!isOpen) replyInput.focus();
+    });
+    replyForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!currentUser) {
+        notification("Please log in before replying.", "failure");
+        return;
+      }
+      const text = replyInput.value.trim();
+      if (!text) return;
+      const submitButton = replyForm.querySelector("button[type=submit]");
+      submitButton.disabled = true;
+      try {
+        const profileSnapshot = await getDoc(doc(db, "users", currentUser.uid));
+        const profile = profileSnapshot.exists() ? profileSnapshot.data() : {};
+        await addDoc(collection(db, "posts", post.id, "replies"), {
+          text,
+          uid: currentUser.uid,
+          userEmail: currentUser.email,
+          username: profile.username ?? currentUser.displayName ?? currentUser.email,
+          handle: profile.handle ?? currentUser.email?.split("@")[0] ?? "user",
+          createdAt: serverTimestamp(),
+        });
+        repliesContainer.dataset.expanded = "true";
+        replyInput.value = "";
+        await loadReplies(post.id, repliesContainer, showRepliesButton);
+        notification("Reply published.", "success");
+      } catch (error) {
+        console.error("Unable to create reply:", error);
+        notification("Unable to publish your reply.", "failure");
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
     const likeButton = postElement.querySelector(".like-button");
     const dislikeButton = postElement.querySelector(".dislike-button");
     likeButton.disabled = !currentUser;

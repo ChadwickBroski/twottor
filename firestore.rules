@@ -40,6 +40,21 @@ service cloud.firestore {
     match /posts/{postId} {
       allow read: if true;
 
+      match /replies/{replyId} {
+        allow read: if true;
+        allow create: if request.auth != null
+                      && request.auth.token.email_verified == true
+                      && request.resource.data.uid == request.auth.uid
+                      && request.resource.data.keys().hasOnly([
+                        'text', 'uid', 'userEmail', 'username', 'handle', 'createdAt'
+                      ])
+                      && request.resource.data.text is string
+                      && request.resource.data.text.size() > 0
+                      && request.resource.data.text.size() <= 280;
+        allow update, delete: if request.auth != null
+                              && resource.data.uid == request.auth.uid;
+      }
+
       function isNumeric(value) {
         return value is int || value is float;
       }
