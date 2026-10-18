@@ -26,12 +26,6 @@ const searchInput = document.getElementById("search-input");
 const searchClear = document.getElementById("search-clear");
 const searchTabs = [...document.querySelectorAll(".search-tab")];
 
-console.log("[search] baseline initialized", {
-  hasForm: Boolean(searchForm),
-  hasInput: Boolean(searchInput),
-  tabCount: searchTabs.length,
-});
-
 // Load every post and user that the current account is allowed to read.
 async function loadSearchLists() {
   if (!db || !auth) {
@@ -57,8 +51,6 @@ async function loadSearchLists() {
 
     // Expose the lists while developing so they can be inspected in DevTools.
     window.searchData = { posts: postsList, users: usersList };
-    console.log("[search] posts loaded", postsList.length, postsList);
-    console.log("[search] users loaded", usersList.length, usersList);
   } catch (error) {
     console.error("[search] unable to load posts and users", error);
   }
@@ -297,7 +289,6 @@ searchInput?.addEventListener("input", () => {
       <span>Your results will appear here.</span>
     `;
   }
-  console.log("[search] input changed", searchInput.value);
 });
 
 // Clear the current query and return focus to the input.
@@ -305,14 +296,12 @@ searchClear?.addEventListener("click", () => {
   searchInput.value = "";
   searchClear.hidden = true;
   searchInput.focus();
-  console.log("[search] input cleared");
 });
 
 // Prevent a page reload until result-searching logic is added.
 searchForm?.addEventListener("submit", (event) => {
   event.preventDefault();
   searchInput.focus();
-  console.log("[search] submitted", searchInput.value);
 });
 
 // Keep one search category visually selected at a time.
@@ -326,6 +315,5 @@ searchTabs.forEach((tab) => {
     searchInput.value = "";
     searchClear.hidden = true;
     searchInput?.dispatchEvent(new Event("input"));
-    console.log("[search] tab selected", tab.textContent.trim());
   });
 });
