@@ -21,6 +21,11 @@ const db = app ? getFirestore(app) : null;
 let postsList = [];
 let usersList = [];
 
+function getProfileUrl(handle) {
+  const basePath = location.hostname.endsWith("github.io") ? "/twottor/" : "/";
+  return `${basePath}user/${encodeURIComponent(handle || "user")}`;
+}
+
 const searchForm = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
 const searchClear = document.getElementById("search-clear");
@@ -159,10 +164,9 @@ searchInput?.addEventListener("input", () => {
         searchedPerson.classList.add("post");
         searchedPerson.innerHTML = `
           <header class="post-header">
-            <strong>${escapeSearchText(person.username || "User")} 
+            <a href="${getProfileUrl(person.handle)}" target="_blank" rel="noopener noreferrer"><strong>${escapeSearchText(person.username || "User")}</strong></a>
             ${person.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
             ${person.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""} ·
-            </strong>
             <span>@${escapeSearchText(person.handle || "user")}</span>
           </header>
           <div class="leaderboard-stats">

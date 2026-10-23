@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      const twottorBasePath = location.hostname.endsWith("github.io") ? "/twottor/" : "/";
+      document.write(`<base href="${twottorBasePath}">`);
+    </script>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@100;200&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" />
@@ -62,7 +66,7 @@
           <span>Log out</span>
         </button>
       </div>
-      <p class="version" id="version">v1.4.0.0</p>
+      <p class="version" id="version">v1.5.0.0</p>
     </aside>
     <main id="home-view">
       <textarea class="post-container" rows="4" placeholder="Write down your thoughts"></textarea>
@@ -229,7 +233,7 @@
             <span>Delete Account</span>
           </button>
         </div>
-        <p style="font-size: 12px; opacity: 0.75; text-align: center;"> &copy; 2026 Twottor 1.4.1.1 • Made by <a href="chadwickbroski.github.io" style="color:#002CF2;  text-decoration: none; font-weight: bold;">ChadwickBroski</a>. &bull; <i class="fa-brands fa-github"></i> Hosted on GITHUB</p>
+        <p style="font-size: 12px; opacity: 0.75; text-align: center;"> &copy; 2026 Twottor 1.5.0.0 • Made by <a href="chadwickbroski.github.io" style="color:#002CF2;  text-decoration: none; font-weight: bold;">ChadwickBroski</a>. &bull; <i class="fa-brands fa-github"></i> Hosted on GITHUB</p>
       </div>
     </div>
     <script type="module" src="src/index.js"></script>

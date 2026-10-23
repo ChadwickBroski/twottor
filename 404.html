@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Twottor</title>
+  </head>
+  <body>
+    <script>
+      const userPath = "/user/";
+      const userPathIndex = location.pathname.indexOf(userPath);
+      const basePath = userPathIndex === -1
+        ? "/"
+        : location.pathname.slice(0, userPathIndex + 1);
+
+      fetch(`${basePath}index.html`)
+        .then((response) => response.text())
+        .then((html) => {
+          document.open();
+          document.write(html);
+          document.close();
+        });
+    </script>
+  </body>
+</html>

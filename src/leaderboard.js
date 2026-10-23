@@ -123,6 +123,11 @@ function escapeHtml(value) {
   })[character]);
 }
 
+function getProfileUrl(handle) {
+  const basePath = location.hostname.endsWith("github.io") ? "/twottor/" : "/";
+  return `${basePath}user/${encodeURIComponent(handle || "user")}`;
+}
+
 async function printUsersOnLeaderboardEntry() {
   if (window.location.hash !== "#leaderboard") return;
   const leaderboardView = document.getElementById("leaderboard-view");
@@ -142,10 +147,9 @@ async function printUsersOnLeaderboardEntry() {
       const totalViews = Number.isSafeInteger(user.totalViews) ? user.totalViews : 0;
       userElement.innerHTML = `
         <header class="post-header">
-          <strong>#${index + 1} ${escapeHtml(user.username || "User")} 
+          <a href="${getProfileUrl(user.handle)}" target="_blank" rel="noopener noreferrer"><strong>#${index + 1} ${escapeHtml(user.username || "User")}</strong></a>
           ${user.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
           ${user.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""}
-          </strong>
           <span>@${escapeHtml(user.handle || "user")}</span>
         </header>
         <div class="leaderboard-stats">

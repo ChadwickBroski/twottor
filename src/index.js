@@ -54,7 +54,9 @@ const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
 function updateNavigation() {
   const currentView = window.location.hash || "#home";
-  const isHome = currentView === "#home";
+  const isUserProfilePath = /^\/(?:twottor\/)?user\/[^/]+\/?$/.test(window.location.pathname)
+    || Boolean(new URLSearchParams(window.location.search).get("user"));
+  const isHome = currentView === "#home" && !isUserProfilePath;
   const searchView = document.getElementById("search-view");
   const isSearch = currentView === "#search";
   const trendingView = document.getElementById("trending-view");
@@ -64,7 +66,11 @@ function updateNavigation() {
   const macaqueView = document.getElementById("macaque-view");
   const isMacaque = currentView === "#macaque";
   const profileView = document.getElementById("profile-view");
-  const isProfile = currentView === "#profile";
+  const isProfile =
+    isUserProfilePath ||
+    window.location.hash === "#profile";
+
+  profileView.hidden = !isProfile;
 
   homeView.hidden = !isHome;
   searchView.hidden = !isSearch;

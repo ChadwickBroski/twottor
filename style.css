@@ -1345,6 +1345,11 @@ body.dark-mode .post {
   border: 1px solid #e1e8ed;
 }
 
+.post-header {
+  text-decoration: none;
+  color: #F5F5F5;
+}
+
 .leaderboard-stats {
   display: flex;
   flex-wrap: wrap;

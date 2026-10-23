@@ -277,6 +277,11 @@ function escapeHtml(value) {
   });
 }
 
+function getProfileUrl(handle) {
+  const basePath = location.hostname.endsWith("github.io") ? "/twottor/" : "/";
+  return `${basePath}user/${encodeURIComponent(handle || "user")}`;
+}
+
 function formatReplyTime(value) {
   let timestamp;
   if (value?.toDate instanceof Function) {
@@ -483,10 +488,12 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     updateDisplayScore(postElement);
     postElement.innerHTML = `
       <header class="post-header">
-        <strong>${authorName}
-          ${authorHandle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
-          ${authorHandle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""}
-        · </strong>
+        <a href="${getProfileUrl(authorHandle)}" target="_blank" rel="noopener noreferrer" class="post-header">
+          <strong>${authorName}
+            ${authorHandle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
+            ${authorHandle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""}
+          · </strong>
+        </a>
         <span>@${authorHandle} · ${createdAtText}</span>
       </header>
       <p class="post-content">${escapeHtml(post.text)}</p>
