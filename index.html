@@ -48,9 +48,20 @@
         <i class="fa-solid fa-user"></i>
         <span id="usernameSpan">username</span>
       </a>
-      <button class="settingsButton" type="button" aria-label="Open settings" aria-pressed="false">
-        <i class="fa-solid fa-gear"></i>
-      </button>
+      <div class="profile-menu" id="profile-menu" aria-label="Profile menu">
+        <a class="profile-menu-item" href="#profile">
+          <i class="fa-solid fa-user" aria-hidden="true"></i>
+          <span>Profile</span>
+        </a>
+        <button class="profile-menu-item" id="mobile-settings-button" type="button">
+          <i class="fa-solid fa-gear" aria-hidden="true"></i>
+          <span>Settings</span>
+        </button>
+        <button class="profile-menu-item" id="mobile-logout-button" type="button">
+          <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+          <span>Log out</span>
+        </button>
+      </div>
       <p class="version" id="version">v1.4.0.0</p>
     </aside>
     <main id="home-view">

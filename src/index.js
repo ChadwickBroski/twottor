@@ -39,13 +39,18 @@ const navLinks = [...document.querySelectorAll(".nav-links .nav-link")];
 const homeView = document.getElementById("home-view");
 const darkMode = localStorage.getItem("darkMode") === "enabled";
 
-const settings = document.querySelector(".settingsButton");
+const settings = document.getElementById("mobile-settings-button");
 const settingsModal = document.getElementById("modal");
 const settingsDialog = settingsModal.querySelector(".modal-content");
 const closeSettingsButton = document.getElementById("close-modal");
 const themeSettingButton = document.getElementById("theme-setting");
 const logoutButton = document.getElementById("account-logout");
 const deleteAccountButton = document.getElementById("account-delete");
+const profileButton = document.getElementById("profileButton");
+const accountButton = document.querySelector(".nav-link.user");
+const profileMenu = document.getElementById("profile-menu");
+const mobileSettingsButton = document.getElementById("mobile-settings-button");
+const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
 function updateNavigation() {
   const currentView = window.location.hash || "#home";
@@ -165,7 +170,6 @@ if (window.matchMedia("(max-width: 640px)").matches) {
   const trendingButton = document.getElementById("trendingButton");
   const leaderboardButton = document.getElementById("leaderboardButton");
   const macaqueButton = document.getElementById("macaqueButton");
-  const profileButton = document.getElementById("profileButton");
 
   homeButton.innerHTML = `<i class="fa-solid fa-house"></i>`;
   searchButton.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i>`;
@@ -173,8 +177,64 @@ if (window.matchMedia("(max-width: 640px)").matches) {
   leaderboardButton.innerHTML = `<i class="fa-solid fa-ranking-star"></i>`;
   macaqueButton.innerHTML = `<i class="fa-brands fa-openai"></i>`
   profileButton.innerHTML = `<i class="fa-solid fa-user"></i>`;
-  console.log("mobile");
 }
+
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 640px)").matches;
+}
+
+function closeProfileMenu() {
+  profileMenu.classList.remove("is-open");
+  profileButton.setAttribute("aria-expanded", "false");
+  accountButton.setAttribute("aria-expanded", "false");
+}
+
+profileButton.setAttribute("aria-haspopup", "menu");
+profileButton.setAttribute("aria-expanded", "false");
+accountButton.setAttribute("aria-haspopup", "menu");
+accountButton.setAttribute("aria-expanded", "false");
+profileButton.addEventListener("click", (event) => {
+  if (!isMobileLayout()) return;
+
+  event.preventDefault();
+  const isOpen = profileMenu.classList.toggle("is-open");
+  profileButton.setAttribute("aria-expanded", String(isOpen));
+  accountButton.setAttribute("aria-expanded", String(isOpen));
+});
+
+accountButton.addEventListener("click", (event) => {
+  if (isMobileLayout()) return;
+
+  event.preventDefault();
+  const isOpen = profileMenu.classList.toggle("is-open");
+  profileButton.setAttribute("aria-expanded", String(isOpen));
+  accountButton.setAttribute("aria-expanded", String(isOpen));
+});
+
+mobileSettingsButton.addEventListener("click", () => {
+  closeProfileMenu();
+  openSettings();
+});
+
+mobileLogoutButton.addEventListener("click", async () => {
+  closeProfileMenu();
+  await logout();
+});
+
+profileMenu.querySelectorAll(".profile-menu-item").forEach((item) => {
+  if (item === mobileSettingsButton || item === mobileLogoutButton) return;
+  item.addEventListener("click", closeProfileMenu);
+});
+
+document.addEventListener("click", (event) => {
+  if (isMobileLayout() && !profileMenu.contains(event.target) && !profileButton.contains(event.target)) {
+    closeProfileMenu();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeProfileMenu();
+});
 
 toggle.addEventListener("click", () => {
   const collapsed = sidebar.classList.toggle("collapsed");

@@ -182,7 +182,8 @@ if (macaqueView) {
 
 			#macaque-view .macaque-model-menu {
 				position: absolute;
-				right: 0;
+				left: auto !important;
+				right: 0 !important;
 				bottom: calc(100% + 8px);
 				z-index: 5;
 				display: grid;
@@ -379,7 +380,10 @@ if (macaqueView) {
 				}
 
 				#macaque-view .macaque-model-menu {
-					right: 0;
+					position: fixed;
+					left: auto !important;
+					right: 16px !important;
+					bottom: calc(96px + env(safe-area-inset-bottom) + 64px);
 					width: min(280px, calc(100vw - 32px));
 				}
 			}
