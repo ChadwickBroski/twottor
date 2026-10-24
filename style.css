@@ -1347,6 +1347,11 @@ body.dark-mode .post {
 
 .post-header {
   text-decoration: none;
+  color: #17202A;
+}
+
+body.dark-mode .post-header {
+  text-decoration: none;
   color: #F5F5F5;
 }
 

@@ -164,9 +164,9 @@ searchInput?.addEventListener("input", () => {
         searchedPerson.classList.add("post");
         searchedPerson.innerHTML = `
           <header class="post-header">
-            <a href="${getProfileUrl(person.handle)}" target="_blank" rel="noopener noreferrer"><strong>${escapeSearchText(person.username || "User")}</strong></a>
+            <a href="${getProfileUrl(person.handle)}" target="_blank" rel="noopener noreferrer" class="post-header"><strong>${escapeSearchText(person.username || "User")}
             ${person.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
-            ${person.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""} ·
+            ${person.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""} · </strong></a>
             <span>@${escapeSearchText(person.handle || "user")}</span>
           </header>
           <div class="leaderboard-stats">
