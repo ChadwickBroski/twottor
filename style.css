@@ -499,6 +499,10 @@ body.dark-mode #macaque-view hr {
   line-height: 1.2;
 }
 
+.profile-handle {
+  font-weight: lighter;
+}
+
 .profile-handle,
 .profile-joined {
   margin: 6px 0 0;

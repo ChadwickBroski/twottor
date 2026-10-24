@@ -9,7 +9,9 @@ import {
 	getFirestore,
 	query,
 	orderBy,
+	increment,
 	serverTimestamp,
+	writeBatch,
 	where,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
@@ -31,6 +33,9 @@ await auth.authStateReady();
 const authenticatedUser = auth.currentUser;
 let currentUser = {};
 let recentPosts = [];
+const likedPostIds = new Set();
+const dislikedPostIds = new Set();
+let reactionProfileData = {};
 
 const pathParts = window.location.pathname.split("/").filter(Boolean);
 const userPathIndex = pathParts.indexOf("user");
@@ -64,6 +69,13 @@ if (profileHandle) {
 		.map((postDocument) => ({ id: postDocument.id, ...postDocument.data() }))
 		.sort((firstPost, secondPost) => getPostTimestamp(secondPost.createdAt) - getPostTimestamp(firstPost.createdAt))
 		.slice(0, 5);
+}
+
+if (authenticatedUser) {
+	const reactionProfileSnapshot = await getDoc(doc(db, "users", authenticatedUser.uid));
+	reactionProfileData = reactionProfileSnapshot.exists() ? reactionProfileSnapshot.data() : {};
+	(reactionProfileData.likedPosts ?? []).forEach((postId) => likedPostIds.add(postId));
+	(reactionProfileData.dislikedPosts ?? []).forEach((postId) => dislikedPostIds.add(postId));
 }
 
 if (profileHandle && !currentUser.uid) {
@@ -107,9 +119,10 @@ profileVIew.innerHTML = `
 		<section class="profile-header">
 			<div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
 			<div class="profile-identity">
-				<h1>${escapeProfileText(currentUser.username)} <span class="profile-handle">· @${escapeProfileText(currentUser.handle)}</span>
+				<h1>${escapeProfileText(currentUser.username)} 
 				${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" style="font-size:18px;" aria-label="Owner" title="Owner"></i>' : ""}
-        ${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" style="font-size:18px;" aria-label="Developer" title="Developer"></i>' : ""}
+        ${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" style="font-size:18px;" aria-label="Developer" title="Developer"></i>' : ""} · 
+				<span class="profile-handle">@${escapeProfileText(currentUser.handle)}</span>
 				</h1>
 				<p class="profile-joined"><i class="fa-solid fa-calendar"></i>  Joined ${createdDate.toLocaleDateString()}</p>
 			</div>
@@ -125,13 +138,17 @@ profileVIew.innerHTML = `
 				${recentPosts.length ? recentPosts.map((post) => `
 					<article class="post" data-post-id="${escapeProfileText(post.id)}">
 						<header class="post-header">
-							<strong>${escapeProfileText(currentUser.username)}</strong>
+							<strong>${escapeProfileText(currentUser.username)}
+							${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
+       				${currentUser.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""} · 
+							</strong>
 							<span>@${escapeProfileText(currentUser.handle)} · ${formatPostAge(post.createdAt)}</span>
 						</header>
 						<p class="post-content">${escapeProfileText(post.text)}</p>
 						<footer class="post-actions">
 							<button class="profile-reply-button" type="button" aria-expanded="false"><i class="fa-solid fa-reply"></i> Reply</button>
-							<button type="button"><i class="fa-regular fa-thumbs-up"></i> ${Number.isSafeInteger(post.likeCount) ? post.likeCount : 0}</button>
+							<button class="profile-dislike-button" type="button" aria-pressed="${dislikedPostIds.has(post.id)}" ${authenticatedUser ? "" : "disabled"}><i class="fa-${dislikedPostIds.has(post.id) ? "solid" : "regular"} fa-thumbs-down"></i> ${Number.isSafeInteger(post.dislikeCount) ? post.dislikeCount : 0}</button>
+							<button class="profile-like-button" type="button" aria-pressed="${likedPostIds.has(post.id)}" ${authenticatedUser ? "" : "disabled"}><i class="fa-${likedPostIds.has(post.id) ? "solid" : "regular"} fa-thumbs-up"></i> ${Number.isSafeInteger(post.likeCount) ? post.likeCount : 0}</button>
 							<button type="button"><i class="fa-regular fa-eye"></i> ${Number.isSafeInteger(post.viewCount) ? post.viewCount : 0}</button>
 						</footer>
 						<form class="reply-form" hidden>
@@ -146,6 +163,80 @@ profileVIew.innerHTML = `
 		</section>
 	</div>
 `;
+
+function renderProfileReaction(postElement, isLiked, isDisliked, likeCount, dislikeCount) {
+	const likeButton = postElement.querySelector(".profile-like-button");
+	const dislikeButton = postElement.querySelector(".profile-dislike-button");
+	likeButton.setAttribute("aria-pressed", String(isLiked));
+	likeButton.innerHTML = `<i class="fa-${isLiked ? "solid" : "regular"} fa-thumbs-up"></i> ${likeCount}`;
+	dislikeButton.setAttribute("aria-pressed", String(isDisliked));
+	dislikeButton.innerHTML = `<i class="fa-${isDisliked ? "solid" : "regular"} fa-thumbs-down"></i> ${dislikeCount}`;
+}
+
+async function saveProfileReaction(post, isLiked, isDisliked) {
+	const batch = writeBatch(db);
+	const userReference = doc(db, "users", authenticatedUser.uid);
+	const previousLiked = Array.isArray(reactionProfileData.likedPosts) && reactionProfileData.likedPosts.includes(post.id);
+	const previousDisliked = Array.isArray(reactionProfileData.dislikedPosts) && reactionProfileData.dislikedPosts.includes(post.id);
+	const likeDelta = Number(isLiked) - Number(previousLiked);
+	const dislikeDelta = Number(isDisliked) - Number(previousDisliked);
+	const userUpdates = {
+		likedPosts: [...likedPostIds],
+		dislikedPosts: [...dislikedPostIds],
+	};
+	if (post.uid === authenticatedUser.uid) {
+		if (likeDelta) userUpdates.totalLikes = increment(likeDelta);
+		if (dislikeDelta) userUpdates.totalDislikes = increment(dislikeDelta);
+		batch.update(userReference, userUpdates);
+	} else {
+		batch.update(userReference, userUpdates);
+		const authorUpdates = {};
+		if (likeDelta) authorUpdates.totalLikes = increment(likeDelta);
+		if (dislikeDelta) authorUpdates.totalDislikes = increment(dislikeDelta);
+		if (Object.keys(authorUpdates).length) batch.update(doc(db, "users", post.uid), authorUpdates);
+	}
+	const postUpdates = {};
+	if (likeDelta) postUpdates.likeCount = increment(likeDelta);
+	if (dislikeDelta) postUpdates.dislikeCount = increment(dislikeDelta);
+	if (Object.keys(postUpdates).length) batch.update(doc(db, "posts", post.id), postUpdates);
+	await batch.commit();
+	reactionProfileData.likedPosts = [...likedPostIds];
+	reactionProfileData.dislikedPosts = [...dislikedPostIds];
+}
+
+profileVIew.querySelectorAll(".profile-like-button, .profile-dislike-button").forEach((reactionButton) => {
+	reactionButton.addEventListener("click", async () => {
+		if (!authenticatedUser) return;
+		const postElement = reactionButton.closest(".post");
+		const post = recentPosts.find((candidate) => candidate.id === postElement.dataset.postId);
+		if (!post) return;
+		const previousLiked = likedPostIds.has(post.id);
+		const previousDisliked = dislikedPostIds.has(post.id);
+		const isLikeAction = reactionButton.classList.contains("profile-like-button");
+		const isLiked = isLikeAction ? !previousLiked : false;
+		const isDisliked = isLikeAction ? false : !previousDisliked;
+		const likeCount = Math.max(0, (Number(post.likeCount) || 0) + Number(isLiked) - Number(previousLiked));
+		const dislikeCount = Math.max(0, (Number(post.dislikeCount) || 0) + Number(isDisliked) - Number(previousDisliked));
+		if (isLiked) likedPostIds.add(post.id); else likedPostIds.delete(post.id);
+		if (isDisliked) dislikedPostIds.add(post.id); else dislikedPostIds.delete(post.id);
+		postElement.querySelector(".profile-like-button").disabled = true;
+		postElement.querySelector(".profile-dislike-button").disabled = true;
+		renderProfileReaction(postElement, isLiked, isDisliked, likeCount, dislikeCount);
+		try {
+			await saveProfileReaction(post, isLiked, isDisliked);
+			post.likeCount = likeCount;
+			post.dislikeCount = dislikeCount;
+		} catch (error) {
+			if (previousLiked) likedPostIds.add(post.id); else likedPostIds.delete(post.id);
+			if (previousDisliked) dislikedPostIds.add(post.id); else dislikedPostIds.delete(post.id);
+			renderProfileReaction(postElement, previousLiked, previousDisliked, Number(post.likeCount) || 0, Number(post.dislikeCount) || 0);
+			console.error("Unable to save profile reaction:", error);
+		} finally {
+			postElement.querySelector(".profile-like-button").disabled = false;
+			postElement.querySelector(".profile-dislike-button").disabled = false;
+		}
+	});
+});
 
 profileVIew.querySelectorAll(".profile-reply-button").forEach((replyButton) => {
 	const replyForm = replyButton.closest(".post").querySelector(".reply-form");
