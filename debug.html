@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twottor Debug</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 760px; margin: 0 auto; padding: 32px 20px; }
+    button { padding: 10px 16px; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .6; }
+    #status { white-space: pre-wrap; margin-top: 20px; line-height: 1.5; }
+    .warning { color: #b42318; }
+  </style>
+</head>
+<body>
+  <h1>Recommendation data maintenance</h1>
+  <p id="access-status">Checking Firebase authentication…</p>
+  <p class="warning">This recalculates every post and user profile. It may take a while and should only be run when necessary.</p>
+  <button id="recalculate-button" type="button" disabled>Recalculate all topic scores</button>
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <script type="module" src="src/debug.js"></script>
+</body>
+</html>

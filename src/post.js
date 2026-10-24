@@ -1,18 +1,4 @@
-import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2";
-
-export async function classifyText(postedSentence) {
-  const exampleSentence = postedSentence;
-  const topics = ["Entertainment", "Sports", "Politics", "Technology", "Health", "Science", "Business", "Travel", "Food", "Education", "Animals", "Environment", "Fashion", "Art", "History", "Music", "Movies", "Books", "Gaming", "Lifestyle"];
-
-  const classifier = await pipeline(
-    "zero-shot-classification",
-    "Xenova/nli-deberta-v3-xsmall",
-    { dtype: "q8" },
-  );
-
-  const classification = await classifier(exampleSentence, topics);
-  return classification.labels[0];
-}
+import { classifyTopics } from "./classifier.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
@@ -22,7 +8,9 @@ import {
   doc,
   getDoc,
   getFirestore,
+  increment,
   serverTimestamp,
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { refreshFeed } from "./feed.js";
@@ -74,19 +62,28 @@ postButton.addEventListener("click", async (event) => {
   postButton.classList.add("loader");
   postButton.setAttribute("aria-busy", "true");
   try {
-    const topic = await classifyText(text);
+    const topicScores = await classifyTopics(text);
+    const topic = Object.entries(topicScores).sort(([, firstScore], [, secondScore]) => secondScore - firstScore)[0]?.[0] ?? "Entertainment";
     const profileSnapshot = await getDoc(doc(db, "users", user.uid));
     const profile = profileSnapshot.exists() ? profileSnapshot.data() : {};
 
     await addDoc(collection(db, "posts"), {
       text: text,
       topic: topic,
+      topicScores,
       uid: user.uid,
       userEmail: user.email,
       username: profile.username ?? user.displayName ?? user.email,
       handle: profile.handle ?? user.email?.split("@")[0] ?? "user",
       createdAt: serverTimestamp(),
     });
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        interestActionCount: increment(3),
+      });
+    } catch (error) {
+      console.warn("Post published, but the interest refresh counter could not be updated:", error);
+    }
 
     postContainer.value = "";
     notification("Post published.", "success");

@@ -16,6 +16,9 @@ import {
   serverTimestamp,
   setDoc,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { TOPICS } from "./classifier.js";
+
+const initialInterestScores = Object.fromEntries(TOPICS.map((topic) => [topic, 0.25]));
 
 const firebaseConfig = {
   apiKey: "AIzaSyBCoUU_nUvDyM_m9tcGuYj-qYcmyPFWGTI",
@@ -132,6 +135,9 @@ form.addEventListener("submit", async (event) => {
       totalLikes: 0,
       totalDislikes: 0,
       totalViews: 0,
+      interestScores: initialInterestScores,
+      interestActionCount: 0,
+      interestUpdatedAt: serverTimestamp(),
       createdAt: serverTimestamp(),
     });
     await sendEmailVerification(result.user);
@@ -185,6 +191,9 @@ googleButton.addEventListener("click", async () => {
       totalLikes: 0,
       totalDislikes: 0,
       totalViews: 0,
+      interestScores: initialInterestScores,
+      interestActionCount: 0,
+      interestUpdatedAt: serverTimestamp(),
       createdAt: serverTimestamp(),
     }, { merge: true });
     window.location.href = "index.html";

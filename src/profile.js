@@ -183,6 +183,7 @@ async function saveProfileReaction(post, isLiked, isDisliked) {
 	const userUpdates = {
 		likedPosts: [...likedPostIds],
 		dislikedPosts: [...dislikedPostIds],
+		interestActionCount: increment(1),
 	};
 	if (post.uid === authenticatedUser.uid) {
 		if (likeDelta) userUpdates.totalLikes = increment(likeDelta);

@@ -4,13 +4,12 @@ const feed = document.getElementById("feed");
 
 function sortFeedForCurrentView() {
 	const isTrending = window.location.hash === "#trending";
+	if (!isTrending) return;
 	const posts = [...feed.children].filter((post) => post.classList.contains("post"));
 	const sortedPosts = [...posts].sort((first, second) => {
-		if (isTrending) {
-			const scoreDifference = (Number(second.dataset.displayScore) || 0)
-				- (Number(first.dataset.displayScore) || 0);
-			if (scoreDifference !== 0) return scoreDifference;
-		}
+		const scoreDifference = (Number(second.dataset.displayScore) || 0)
+			- (Number(first.dataset.displayScore) || 0);
+		if (scoreDifference !== 0) return scoreDifference;
 		return (Number(second.dataset.createdAt) || 0)
 			- (Number(first.dataset.createdAt) || 0);
 	});

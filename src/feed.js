@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
-import { classifyText } from "./post.js";
+import { classifyTopics, TOPICS } from "./classifier.js";
 import {
   addDoc,
   collection,
@@ -44,6 +44,110 @@ const pendingReactionChanges = new Map();
 const persistedLikedPostIds = new Set();
 const persistedDislikedPostIds = new Set();
 let isFlushingPendingChanges = false;
+let interestActionsSinceRefresh = 0;
+let interestRefreshTimer;
+let isRefreshingInterests = false;
+let feedRefreshVersion = 0;
+const INTEREST_REFRESH_INTERVAL_MS = 2 * 60 * 1000;
+const INTEREST_ACTION_THRESHOLD = 3;
+
+function clampInterest(value, fallback = 0.25) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? Math.min(1, Math.max(0, numericValue)) : fallback;
+}
+
+function getTimestampMs(value) {
+  if (value?.toDate instanceof Function) return value.toDate().getTime();
+  if (typeof value?.seconds === "number") return value.seconds * 1000;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function getPostTopicScores(post) {
+  const scores = {};
+  if (post.topicScores && typeof post.topicScores === "object") {
+    TOPICS.forEach((topic) => {
+      if (post.topicScores[topic] !== undefined) scores[topic] = clampInterest(post.topicScores[topic], 0);
+    });
+  }
+  if (!Object.keys(scores).length && post.topic) scores[post.topic] = 1;
+  return scores;
+}
+
+function getProfileInterestScores(userProfile) {
+  return Object.fromEntries(TOPICS.map((topic) => [
+    topic,
+    clampInterest(userProfile.interestScores?.[topic]),
+  ]));
+}
+
+function getFeedbackText(posts, label) {
+  return posts
+    .slice(0, 20)
+    .map((post) => {
+      const topics = Object.entries(getPostTopicScores(post))
+        .filter(([, score]) => score >= 0.2)
+        .sort(([, firstScore], [, secondScore]) => secondScore - firstScore)
+        .slice(0, 5)
+        .map(([topic]) => topic)
+        .join(", ");
+      return `${label} (${topics || "unknown topic"}): ${String(post.text ?? "").slice(0, 280)}`;
+    })
+    .join("\n");
+}
+
+async function refreshUserInterestScores(userId, userProfile, allPosts) {
+  const likedIds = new Set(Array.isArray(userProfile.likedPosts) ? userProfile.likedPosts : []);
+  const dislikedIds = new Set(Array.isArray(userProfile.dislikedPosts) ? userProfile.dislikedPosts : []);
+  const ownPosts = allPosts.filter((post) => post.uid === userId);
+  const likedPosts = allPosts.filter((post) => likedIds.has(post.id));
+  const dislikedPosts = allPosts.filter((post) => dislikedIds.has(post.id));
+  const positivePosts = [...new Map([...ownPosts, ...likedPosts].map((post) => [post.id, post])).values()];
+  const positiveText = getFeedbackText(positivePosts, "Preferred topic content");
+  const negativeText = getFeedbackText(dislikedPosts, "Disliked topic content");
+  const [positiveScores, negativeScores] = await Promise.all([
+    positiveText ? classifyTopics(positiveText) : {},
+    negativeText ? classifyTopics(negativeText) : {},
+  ]);
+  const interestScores = Object.fromEntries(TOPICS.map((topic) => {
+    const positive = positiveText ? clampInterest(positiveScores[topic], 0) : 0.25;
+    const negative = negativeText ? clampInterest(negativeScores[topic], 0) : 0;
+    return [topic, Number((positive * (1 - (negative * 0.75))).toFixed(4))];
+  }));
+  await updateDoc(doc(db, "users", userId), {
+    interestScores,
+    interestActionCount: 0,
+    interestUpdatedAt: serverTimestamp(),
+  });
+  return interestScores;
+}
+
+function refreshInterestsInBackground(userId, userProfile, allPosts) {
+  if (isRefreshingInterests) return;
+  isRefreshingInterests = true;
+  refreshUserInterestScores(userId, userProfile, allPosts)
+    .then(() => refreshFeed(auth.currentUser))
+    .catch((error) => {
+      console.warn("Unable to refresh personalized interests:", error);
+    })
+    .finally(() => {
+      isRefreshingInterests = false;
+    });
+}
+
+function getPostInterestScore(post, interestScores) {
+  const topicScores = getPostTopicScores(post);
+  const weightedTopics = Object.entries(topicScores)
+    .filter(([, score]) => score >= 0.05)
+    .sort(([, firstScore], [, secondScore]) => secondScore - firstScore)
+    .slice(0, 5);
+  if (!weightedTopics.length) return 0;
+  const totalTopicWeight = weightedTopics.reduce((sum, [, score]) => sum + score, 0);
+  return weightedTopics.reduce(
+    (sum, [topic, score]) => sum + (score * (interestScores[topic] ?? 0.25)),
+    0,
+  ) / totalTopicWeight;
+}
 
 function updateDisplayScore(postElement) {
   const likes = Number(postElement.dataset.likes) || 0;
@@ -117,9 +221,11 @@ async function flushPendingChanges() {
 
   const userDocumentUpdates = new Map();
   userUpdates.forEach((userUpdate, userId) => {
+    const reactionCount = reactionChangesToSave.filter(([, change]) => change.userId === userId).length;
     userDocumentUpdates.set(userId, {
       likedPosts: [...userUpdate.likedPosts],
       dislikedPosts: [...userUpdate.dislikedPosts],
+      interestActionCount: increment(reactionCount),
     });
   });
 
@@ -220,6 +326,11 @@ async function flushPendingChanges() {
         pendingReactionChanges.delete(postId);
       }
     });
+    interestActionsSinceRefresh += reactionChangesToSave.filter(([, change]) => change.userId === auth.currentUser?.uid).length;
+    if (interestActionsSinceRefresh >= INTEREST_ACTION_THRESHOLD) {
+      interestActionsSinceRefresh = 0;
+      void refreshFeed(auth.currentUser);
+    }
   } catch (error) {
     viewedPostsToSave.forEach(([postId, authorId]) => pendingViewCounts.set(postId, authorId));
     console.error("Error saving pending post views and reactions:\n" + JSON.stringify({
@@ -301,6 +412,13 @@ function formatReplyTime(value) {
 }
 
 async function loadReplies(postId, repliesContainer, showRepliesButton) {
+  if (repliesContainer.dataset.loaded === "true") {
+    repliesContainer.hidden = repliesContainer.dataset.expanded !== "true";
+    showRepliesButton.innerHTML = repliesContainer.hidden
+      ? '<i class="fa-solid fa-chevron-down"></i> Show replies'
+      : '<i class="fa-solid fa-chevron-up"></i> Hide replies';
+    return;
+  }
   const repliesSnapshot = await getDocs(
     query(collection(db, "posts", postId, "replies"), orderBy("createdAt", "asc")),
   );
@@ -316,12 +434,14 @@ async function loadReplies(postId, repliesContainer, showRepliesButton) {
     </div>`;
   }).join("");
   if (repliesSnapshot.empty) {
+    repliesContainer.dataset.loaded = "true";
     repliesContainer.closest(".post").dataset.replies = "0";
     showRepliesButton.hidden = true;
     repliesContainer.hidden = true;
     return;
   }
   const postElement = repliesContainer.closest(".post");
+  repliesContainer.dataset.loaded = "true";
   postElement.dataset.replies = String(repliesSnapshot.size);
   updateDisplayScore(postElement);
   showRepliesButton.hidden = false;
@@ -333,6 +453,7 @@ async function loadReplies(postId, repliesContainer, showRepliesButton) {
 }
 
 export async function refreshFeed(currentUser = auth.currentUser) {
+  const refreshVersion = ++feedRefreshVersion;
   const feedContainer = document.getElementById("feed");
 
   const allPostsSnapshot = await getDocs(
@@ -348,11 +469,20 @@ export async function refreshFeed(currentUser = auth.currentUser) {
   }));
   let posts = allPosts;
   const authorProfiles = new Map();
+  let interestScores = getProfileInterestScores({});
   if (currentUser) {
-    const currentUserPosts = allPosts.filter((post) => post.uid === currentUser.uid);
     const userProfileSnapshot = await getDoc(doc(db, "users", currentUser.uid));
-    const userProfile = userProfileSnapshot.exists() ? userProfileSnapshot.data() : {};
-    const userInterest = userProfile.interest;
+    let userProfile = userProfileSnapshot.exists() ? userProfileSnapshot.data() : {};
+    interestScores = getProfileInterestScores(userProfile);
+    const lastInterestUpdate = getTimestampMs(userProfile.interestUpdatedAt);
+    const interestIsStale = !userProfileSnapshot.exists()
+      || !userProfile.interestScores
+      || !lastInterestUpdate
+      || Date.now() - lastInterestUpdate >= INTEREST_REFRESH_INTERVAL_MS
+      || Number(userProfile.interestActionCount) >= INTEREST_ACTION_THRESHOLD;
+    if (interestIsStale) {
+      refreshInterestsInBackground(currentUser.uid, userProfile, allPosts);
+    }
     authorProfiles.set(currentUser.uid, userProfile);
     persistedLikedPostIds.clear();
     persistedDislikedPostIds.clear();
@@ -384,30 +514,20 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     dislikedPostIds.clear();
     persistedLikedPostIds.clear();
     persistedDislikedPostIds.clear();
+  }
 
-    if (currentUserPosts.length > 10 && userInterest) {
-      const matchingPostsSnapshot = await getDocs(
-        query(
-          collection(db, "posts"),
-          where("topic", "==", userInterest),
-          orderBy("createdAt", "desc"),
-        ),
-      );
-      posts = matchingPostsSnapshot.docs.map((postDoc) => ({
-        id: postDoc.id,
-        ...postDoc.data(),
-      }));
-    }
-
-    if (currentUserPosts.length >= 10 && currentUserPosts.length % 10 === 0) {
-      const userInterest = await classifyText(
-        "These are all the posts by the current user (ordered from latest to oldest): " +
-          currentUserPosts.map((post) => post.text).join(" "),
-      );
-      await updateDoc(doc(db, "users", currentUser.uid), {
-        interest: userInterest,
-      });
-    }
+  if (currentUser) {
+    const rankedPosts = posts.map((post, index) => ({
+      post,
+      index,
+      relevance: getPostInterestScore(post, interestScores),
+    }));
+    rankedPosts.sort((first, second) => {
+      if (second.relevance !== first.relevance) return second.relevance - first.relevance;
+      const createdAtDifference = getTimestampMs(second.post.createdAt) - getTimestampMs(first.post.createdAt);
+      return createdAtDifference || first.index - second.index;
+    });
+    posts = rankedPosts.map(({ post }) => post);
   }
 
   const authorUids = [
@@ -425,6 +545,8 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       authorProfiles.set(authorUids[index], result.value.data());
     }
   });
+
+  if (refreshVersion !== feedRefreshVersion) return;
 
   feedContainer.innerHTML = "";
 
@@ -520,9 +642,8 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       repliesContainer.dataset.expanded = String(!isExpanded);
       void loadReplies(post.id, repliesContainer, showRepliesButton);
     });
-    loadReplies(post.id, repliesContainer, showRepliesButton).catch((error) => {
-      console.error("Unable to load replies:", error);
-    });
+    showRepliesButton.hidden = false;
+    showRepliesButton.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Show replies';
     replyButton.addEventListener("click", () => {
       if (!currentUser) {
         notification("Please log in before replying.", "failure");
@@ -624,8 +745,16 @@ export async function refreshFeed(currentUser = auth.currentUser) {
 }
 
 onAuthStateChanged(auth, (currentUser) => {
+  clearInterval(interestRefreshTimer);
   refreshFeed(currentUser).catch((error) => {
     console.error("Unable to load posts:", error);
     notification("Unable to load posts.", "failure");
   });
+  if (currentUser) {
+    interestRefreshTimer = setInterval(() => {
+      refreshFeed(currentUser).catch((error) => {
+        console.error("Unable to refresh personalized feed:", error);
+      });
+    }, INTEREST_REFRESH_INTERVAL_MS);
+  }
 });

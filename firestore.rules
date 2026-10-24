@@ -2,6 +2,11 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isDebugAdmin() {
+      return request.auth != null
+             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.handle == 'abhay';
+    }
+
     match /users/{userId} {
       allow read: if request.auth != null;
       allow create, delete: if request.auth != null
@@ -9,6 +14,12 @@ service cloud.firestore {
       allow update: if request.auth != null
                     && (
                       request.auth.uid == userId
+                      || (
+                        isDebugAdmin()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                          'interestScores', 'interestActionCount', 'interestUpdatedAt'
+                        ])
+                      )
                       || (
                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalLikes', 'totalDislikes', 'totalViews'])
                         && request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalLikes', 'totalDislikes', 'totalViews'])
@@ -65,9 +76,14 @@ service cloud.firestore {
 
       allow update: if request.auth != null
                     && (
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'likeCount', 'dislikeCount'])
-                      && request.resource.data.diff(resource.data).affectedKeys().hasAny(['viewCount', 'likeCount', 'dislikeCount'])
-                      && (
+                      (
+                        isDebugAdmin()
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['topic', 'topicScores'])
+                      )
+                      || (
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'likeCount', 'dislikeCount'])
+                        && request.resource.data.diff(resource.data).affectedKeys().hasAny(['viewCount', 'likeCount', 'dislikeCount'])
+                        && (
                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['viewCount'])
                         || (
                           isNumeric(request.resource.data.viewCount)
@@ -78,8 +94,8 @@ service cloud.firestore {
                               && request.resource.data.viewCount == 1)
                           )
                         )
-                      )
-                      && (
+                        )
+                        && (
                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['likeCount'])
                         || (
                           request.resource.data.likeCount is int
@@ -99,8 +115,8 @@ service cloud.firestore {
                             )
                           )
                         )
-                      )
-                      && (
+                        )
+                        && (
                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['dislikeCount'])
                         || (
                           request.resource.data.dislikeCount is int
@@ -119,6 +135,7 @@ service cloud.firestore {
                               && !getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('dislikedPosts', []).hasAny([postId])
                             )
                           )
+                        )
                         )
                       )
                     );
