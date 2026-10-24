@@ -52,6 +52,13 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
+const version = "1.5.2.0";
+const desktopVersion = document.getElementById("desktop-version");
+const settingsVersion = document.getElementById("settings-version");
+
+desktopVersion.innerHTML = version;
+settingsVersion.innerHTML = version;
+
 function updateNavigation() {
   const currentView = window.location.hash || "#home";
   const isUserProfilePath = /^\/(?:twottor\/)?user\/[^/]+\/?$/.test(window.location.pathname)
