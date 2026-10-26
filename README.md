@@ -1,6 +1,11 @@
+<div style="text-align:center;">
+<img src="assets/favicon.svg" style="width:128px;height:128px;"></img>
+
 # Twottor
 
 Twottor is a full web-based social platform inspired by Twitter/X, with an integrated MacaqueAI chat experience.
+
+</div>
 
 ## Features
 
@@ -12,6 +17,7 @@ Twottor is a full web-based social platform inspired by Twitter/X, with an integ
 - Light and dark mode
 - MacaqueAI model selection with streamed responses
 - Markdown, code blocks, tables, blockquotes, and math rendering in AI responses
+and lots more
 
 ## Project structure
 
@@ -28,7 +34,7 @@ firestore.rules     Firestore security rules
 
 ## Releases
 
-GitHub releases use four-part versioning:
+Twottor uses 4-part versioning:
 
 ```text
 v1.2.2.1
