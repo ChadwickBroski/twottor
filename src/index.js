@@ -52,7 +52,7 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.5.2.0";
+const version = "1.5.2.1";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
@@ -251,7 +251,7 @@ document.addEventListener("keydown", (event) => {
 
 toggle.addEventListener("click", () => {
   const collapsed = sidebar.classList.toggle("collapsed");
-  const version = document.getElementById("version");
+  const version = document.getElementById("desktop-version");
   version.style.display = collapsed ? "none" : "block";
 
   document.body.classList.toggle("sidebar-collapsed", collapsed);
