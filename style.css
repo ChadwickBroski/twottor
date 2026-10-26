@@ -1909,8 +1909,11 @@ body.dark-mode .post-actions button:hover {
     padding-bottom: 0;
   }
 
-  #leaderboardButton,
-  #leaderboard-view {
+  #leaderboardButton {
+    display: none;
+  }
+
+  #macaqueButton {
     display: none;
   }
 
@@ -1946,7 +1949,7 @@ body.dark-mode .post-actions button:hover {
     box-sizing: border-box;
     min-height: auto;
     align-items: center;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     font-size: 50px;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
     border-top: 1px solid #e1e8ed;
