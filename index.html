@@ -57,13 +57,17 @@
           <i class="fa-solid fa-user" aria-hidden="true"></i>
           <span>Profile</span>
         </a>
-        <a class="profile-menu-item" href="#leaderboard">
+        <a class="profile-menu-item mobile-only-menu-item" href="#leaderboard">
           <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
           <span>Leaderboards</span>
         </a>
-        <a class="profile-menu-item" href="#macaque">
+        <a class="profile-menu-item mobile-only-menu-item" href="#macaque">
           <i class="fa-brands fa-openai" aria-hidden="true"></i>
           <span>MacaqueAI</span>
+        </a>
+        <a class="profile-menu-item" href="#updatelog">
+          <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+          <span>Update log</span>
         </a>
         <button class="profile-menu-item" id="mobile-settings-button" type="button">
           <i class="fa-solid fa-gear" aria-hidden="true"></i>
@@ -199,6 +203,10 @@
       <!-- Profile will be added in profile.js -->
     </main>
 
+    <main id="updatelog-view" hidden>
+      <!-- Update log will be added in updatelog.js -->
+    </main>
+
     <!-- Settings Modal -->
     <div class="modal" id="modal" aria-hidden="true">
       <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
@@ -253,5 +261,6 @@
     <script type="module" src="src/post.js"></script>
     <script type="module" src="src/notification.js"></script>
     <script type="module" src="src/macaque.js"></script>
+    <script type="module" src="src/updatelog.js"></script>
   </body>
 </html>

@@ -52,7 +52,7 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.6.1.0";
+const version = "1.7.0.0";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
@@ -72,6 +72,8 @@ function updateNavigation() {
   const isLeaderboard = currentView === "#leaderboard";
   const macaqueView = document.getElementById("macaque-view");
   const isMacaque = currentView === "#macaque";
+  const updatelogView = document.getElementById("updatelog-view");
+  const isUpdatelog = currentView === "#updatelog";
   const profileView = document.getElementById("profile-view");
   const isProfile =
     isUserProfilePath ||
@@ -84,6 +86,7 @@ function updateNavigation() {
   trendingView.hidden = !isTrending;
   leaderboardView.hidden = !isLeaderboard
   macaqueView.hidden = !isMacaque;
+  updatelogView.hidden = !isUpdatelog;
   profileView.hidden = !isProfile;
   navLinks.forEach((link) => {
     const isActive = link.hash === currentView;
