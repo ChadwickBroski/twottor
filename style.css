@@ -511,6 +511,21 @@ body.dark-mode .update-entry-avatar {
   gap: 6px;
 }
 
+.update-entry-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.update-entry-additions {
+  color: #16803c;
+}
+
+.update-entry-deletions {
+  color: #c53939;
+}
+
 body.dark-mode .update-entry p,
 body.dark-mode .update-entry-meta {
   color: #c5d0d9;
