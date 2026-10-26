@@ -135,7 +135,9 @@ async function printUsersOnLeaderboardEntry() {
   try {
     const usersUnsorted = await initializeMissingUserTotals(await fetchUsers());
     const score = (user) =>
-      (user.totalLikes ?? 0) - (user.totalDislikes ?? 0) + Math.log1p(user.totalViews ?? 0);
+      (user.totalLikes ?? 0) - (user.totalDislikes ?? 0)
+      + Math.log1p(user.totalViews ?? 0)
+      + (Math.log1p(Number(user.totalFollowers ?? user.followers?.length ?? 0)) * 1.25);
     const users = [...usersUnsorted].sort((a, b) => score(b) - score(a));
 
     leaderboardView.querySelectorAll(".post").forEach((element) => element.remove());
@@ -145,6 +147,9 @@ async function printUsersOnLeaderboardEntry() {
       const totalLikes = Number.isSafeInteger(user.totalLikes) ? user.totalLikes : 0;
       const totalDislikes = Number.isSafeInteger(user.totalDislikes) ? user.totalDislikes : 0;
       const totalViews = Number.isSafeInteger(user.totalViews) ? user.totalViews : 0;
+      const totalFollowers = Number.isSafeInteger(user.totalFollowers)
+        ? user.totalFollowers
+        : (Array.isArray(user.followers) ? user.followers.length : 0);
       userElement.innerHTML = `
         <header class="post-header">
           <a href="${getProfileUrl(user.handle)}" target="_blank" rel="noopener noreferrer" class="post-header"><strong>#${index + 1} ${escapeHtml(user.username || "User")}
@@ -156,6 +161,7 @@ async function printUsersOnLeaderboardEntry() {
           <span><i class="fa-solid fa-eye"></i> ${totalViews} views</span>
           <span><i class="fa-solid fa-thumbs-up"></i> ${totalLikes} likes</span>
           <span><i class="fa-solid fa-thumbs-down"></i> ${totalDislikes} dislikes</span>
+          <span><i class="fa-solid fa-user-group"></i> ${totalFollowers} followers</span>
         </div>
       `;
       leaderboardView.append(userElement);

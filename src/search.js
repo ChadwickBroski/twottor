@@ -4,6 +4,8 @@ import { getApp, getApps } from "https://www.gstatic.com/firebasejs/12.19.0/fire
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -90,6 +92,57 @@ function escapeSearchText(value) {
   })[character]);
 }
 
+function setSearchFollowState(button, isFollowing, animate = false) {
+  button.classList.toggle("is-following", isFollowing);
+  button.setAttribute("aria-pressed", String(isFollowing));
+  button.querySelector(".profile-follow-label").textContent = isFollowing ? "Following" : "Follow";
+  button.querySelector(".profile-follow-icon").innerHTML = isFollowing
+    ? '<i class="fa-solid fa-check"></i>'
+    : '<i class="fa-solid fa-plus"></i>';
+  if (animate) {
+    button.classList.remove("is-animating");
+    void button.offsetWidth;
+    button.classList.add("is-animating");
+  }
+}
+
+async function saveSearchFollow(person, button, followersCountElement) {
+  await auth.authStateReady();
+  const currentUser = auth.currentUser;
+  if (!currentUser) return window.alert("Please log in before following people.");
+  if (currentUser.uid === person.uid) return;
+
+  const currentProfile = usersList.find((user) => user.uid === currentUser.uid) || {};
+  const following = new Set(Array.isArray(currentProfile.following) ? currentProfile.following : []);
+  const isFollowing = !following.has(person.uid);
+  const previousFollowerCount = Number(person.totalFollowers ?? person.followers?.length ?? 0);
+  button.disabled = true;
+  if (isFollowing) following.add(person.uid); else following.delete(person.uid);
+  currentProfile.following = [...following];
+  setSearchFollowState(button, isFollowing, true);
+
+  try {
+    const batch = writeBatch(db);
+    batch.update(doc(db, "users", currentUser.uid), {
+      following: isFollowing ? arrayUnion(person.uid) : arrayRemove(person.uid),
+    });
+    batch.update(doc(db, "users", person.uid), {
+      followers: isFollowing ? arrayUnion(currentUser.uid) : arrayRemove(currentUser.uid),
+      totalFollowers: increment(isFollowing ? 1 : -1),
+    });
+    await batch.commit();
+    person.totalFollowers = Math.max(0, previousFollowerCount + (isFollowing ? 1 : -1));
+    followersCountElement.innerHTML = `<i class="fa-solid fa-user-group"></i> ${person.totalFollowers} followers`;
+  } catch (error) {
+    if (isFollowing) following.delete(person.uid); else following.add(person.uid);
+    currentProfile.following = [...following];
+    setSearchFollowState(button, !isFollowing);
+    console.error("Unable to save search follow:", error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function loadSearchReplies(postId, container, toggle) {
   const snapshot = await getDocs(collection(db, "posts", postId, "replies"));
   container.innerHTML = snapshot.docs.map((replyDocument) => {
@@ -162,19 +215,31 @@ searchInput?.addEventListener("input", () => {
       searchedPeople.forEach((person) => {
         const searchedPerson = document.createElement("article");
         searchedPerson.classList.add("post");
+        const currentProfile = usersList.find((user) => user.uid === auth.currentUser?.uid) || {};
+        const isFollowing = Array.isArray(currentProfile.following) && currentProfile.following.includes(person.uid);
+        const totalFollowers = Number(person.totalFollowers ?? person.followers?.length ?? 0);
         searchedPerson.innerHTML = `
-          <header class="post-header">
+          <header class="post-header search-person-header">
             <a href="${getProfileUrl(person.handle)}" target="_blank" rel="noopener noreferrer" class="post-header"><strong>${escapeSearchText(person.username || "User")}
             ${person.handle === "abhay" ? ' <i class="fa-solid fa-user-tie profile-badge" aria-label="Owner" title="Owner"></i>' : ""}
             ${person.handle === "abhay" ? ' <i class="fa-solid fa-code profile-badge" aria-label="Developer" title="Developer"></i>' : ""} · </strong></a>
             <span>@${escapeSearchText(person.handle || "user")}</span>
+            <button class="profile-follow search-follow-button${isFollowing ? " is-following" : ""}" type="button" aria-pressed="${isFollowing}">
+              <span class="profile-follow-icon" aria-hidden="true"><i class="fa-solid fa-${isFollowing ? "check" : "plus"}"></i></span>
+              <span class="profile-follow-label">${isFollowing ? "Following" : "Follow"}</span>
+            </button>
           </header>
           <div class="leaderboard-stats">
             <span><i class="fa-solid fa-eye"></i> ${person.totalViews} views</span>
             <span><i class="fa-solid fa-thumbs-up"></i> ${person.totalLikes} likes</span>
             <span><i class="fa-solid fa-thumbs-down"></i> ${person.totalDislikes} dislikes</span>
+            <span class="search-person-followers"><i class="fa-solid fa-user-group"></i> ${totalFollowers} followers</span>
           </div>
         `;
+        const followButton = searchedPerson.querySelector(".search-follow-button");
+        const followersCountElement = searchedPerson.querySelector(".search-person-followers");
+        followButton.addEventListener("click", () => saveSearchFollow(person, followButton, followersCountElement));
+        followButton.addEventListener("animationend", () => followButton.classList.remove("is-animating"));
         searchResults.append(searchedPerson);
       });
     } else if (searchedPeople.length === 0) {

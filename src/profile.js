@@ -2,6 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
 	addDoc,
+	arrayRemove,
+	arrayUnion,
 	collection,
 	doc,
 	getDoc,
@@ -35,6 +37,7 @@ let currentUser = {};
 let recentPosts = [];
 const likedPostIds = new Set();
 const dislikedPostIds = new Set();
+const followingIds = new Set();
 let reactionProfileData = {};
 
 const pathParts = window.location.pathname.split("/").filter(Boolean);
@@ -76,6 +79,7 @@ if (authenticatedUser) {
 	reactionProfileData = reactionProfileSnapshot.exists() ? reactionProfileSnapshot.data() : {};
 	(reactionProfileData.likedPosts ?? []).forEach((postId) => likedPostIds.add(postId));
 	(reactionProfileData.dislikedPosts ?? []).forEach((postId) => dislikedPostIds.add(postId));
+	(reactionProfileData.following ?? []).forEach((userId) => followingIds.add(userId));
 }
 
 if (profileHandle && !currentUser.uid) {
@@ -126,12 +130,21 @@ profileVIew.innerHTML = `
 				</h1>
 				<p class="profile-joined"><i class="fa-solid fa-calendar"></i>  Joined ${createdDate.toLocaleDateString()}</p>
 			</div>
+			<button class="profile-follow" type="button" aria-pressed="false">
+				<span class="profile-follow-icon" aria-hidden="true"><i class="fa-solid fa-plus"></i></span>
+				<span class="profile-follow-label">Follow</span>
+			</button>
 		</section>
 		<section class="profile-stats" aria-label="Profile statistics">
+			<div class="profile-stat"><i class="fa-solid fa-user-group"></i><strong class="profile-follower-count">${currentUser.totalFollowers ?? currentUser.followers?.length ?? 0}</strong><span>Followers</span></div>
 			<div class="profile-stat"><i class="fa-solid fa-eye"></i><strong>${currentUser.totalViews ?? 0}</strong><span>Views</span></div>
 			<div class="profile-stat"><i class="fa-solid fa-thumbs-up"></i><strong>${currentUser.totalLikes ?? 0}</strong><span>Likes</span></div>
 			<div class="profile-stat"><i class="fa-solid fa-thumbs-down"></i><strong>${currentUser.totalDislikes ?? 0}</strong><span>Dislikes</span></div>
 		</section>
+		<button class="profile-follow-mobile" type="button" aria-pressed="false">
+			<span class="profile-follow-icon" aria-hidden="true"><i class="fa-solid fa-plus"></i></span>
+			<span class="profile-follow-label">Follow</span>
+		</button>
 		<section class="profile-recent">
 			<h2>Recent posts</h2>
 			<div class="profile-posts">
@@ -163,6 +176,57 @@ profileVIew.innerHTML = `
 		</section>
 	</div>
 `;
+
+const followButtons = [...profileVIew.querySelectorAll(".profile-follow, .profile-follow-mobile")];
+
+function setFollowState(isFollowing, animate = false) {
+	followButtons.forEach((followButton) => {
+		followButton.classList.toggle("is-following", isFollowing);
+		followButton.setAttribute("aria-pressed", String(isFollowing));
+		followButton.querySelector(".profile-follow-label").textContent = isFollowing ? "Following" : "Follow";
+		followButton.querySelector(".profile-follow-icon").innerHTML = isFollowing
+			? '<i class="fa-solid fa-check"></i>'
+			: '<i class="fa-solid fa-plus"></i>';
+		if (animate) {
+			followButton.classList.remove("is-animating");
+			void followButton.offsetWidth;
+			followButton.classList.add("is-animating");
+		}
+	});
+}
+
+followButtons.forEach((followButton) => {
+	followButton.addEventListener("click", async () => {
+		if (!authenticatedUser || !currentUser.uid || authenticatedUser.uid === currentUser.uid) return;
+		const isFollowing = followButton.getAttribute("aria-pressed") !== "true";
+		const previousFollowerCount = Number(currentUser.totalFollowers ?? currentUser.followers?.length ?? 0);
+		followButtons.forEach((button) => { button.disabled = true; });
+		if (isFollowing) followingIds.add(currentUser.uid); else followingIds.delete(currentUser.uid);
+		setFollowState(isFollowing, true);
+		try {
+			const batch = writeBatch(db);
+			batch.update(doc(db, "users", authenticatedUser.uid), {
+				following: isFollowing ? arrayUnion(currentUser.uid) : arrayRemove(currentUser.uid),
+			});
+			batch.update(doc(db, "users", currentUser.uid), {
+				followers: isFollowing ? arrayUnion(authenticatedUser.uid) : arrayRemove(authenticatedUser.uid),
+				totalFollowers: increment(isFollowing ? 1 : -1),
+			});
+			await batch.commit();
+			currentUser.totalFollowers = Math.max(0, previousFollowerCount + (isFollowing ? 1 : -1));
+			profileVIew.querySelector(".profile-follower-count").textContent = currentUser.totalFollowers;
+		} catch (error) {
+			if (isFollowing) followingIds.delete(currentUser.uid); else followingIds.add(currentUser.uid);
+			setFollowState(!isFollowing, false);
+			console.error("Unable to save profile follow:", error);
+		} finally {
+			followButtons.forEach((button) => { button.disabled = false; });
+		}
+	});
+	followButton.addEventListener("animationend", () => followButton.classList.remove("is-animating"));
+});
+
+setFollowState(followingIds.has(currentUser.uid));
 
 function renderProfileReaction(postElement, isLiked, isDisliked, likeCount, dislikeCount) {
 	const likeButton = postElement.querySelector(".profile-like-button");

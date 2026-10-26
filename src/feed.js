@@ -149,6 +149,14 @@ function getPostInterestScore(post, interestScores) {
   ) / totalTopicWeight;
 }
 
+function getAuthorFollowerBoost(authorProfile) {
+  const totalFollowers = Math.max(
+    0,
+    Number(authorProfile?.totalFollowers ?? authorProfile?.followers?.length ?? 0),
+  );
+  return Math.log1p(totalFollowers) * 0.08;
+}
+
 function updateDisplayScore(postElement) {
   const likes = Number(postElement.dataset.likes) || 0;
   const dislikes = Number(postElement.dataset.dislikes) || 0;
@@ -516,27 +524,8 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     persistedDislikedPostIds.clear();
   }
 
-  if (currentUser) {
-    const rankedPosts = posts.map((post, index) => ({
-      post,
-      index,
-      relevance: getPostInterestScore(post, interestScores),
-    }));
-    rankedPosts.sort((first, second) => {
-      if (second.relevance !== first.relevance) return second.relevance - first.relevance;
-      const createdAtDifference = getTimestampMs(second.post.createdAt) - getTimestampMs(first.post.createdAt);
-      return createdAtDifference || first.index - second.index;
-    });
-    posts = rankedPosts.map(({ post }) => post);
-  }
-
-  const authorUids = [
-    ...new Set(
-      posts
-        .filter((post) => post.uid && (!post.username || !post.handle) && !authorProfiles.has(post.uid))
-        .map((post) => post.uid),
-    ),
-  ];
+  const authorUids = [...new Set(posts.map((post) => post.uid).filter(Boolean))]
+    .filter((uid) => !authorProfiles.has(uid));
   const authorSnapshots = await Promise.allSettled(
     authorUids.map((uid) => getDoc(doc(db, "users", uid))),
   );
@@ -545,6 +534,21 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       authorProfiles.set(authorUids[index], result.value.data());
     }
   });
+
+  if (currentUser) {
+    const rankedPosts = posts.map((post, index) => ({
+      post,
+      index,
+      relevance: getPostInterestScore(post, interestScores)
+        + getAuthorFollowerBoost(authorProfiles.get(post.uid)),
+    }));
+    rankedPosts.sort((first, second) => {
+      if (second.relevance !== first.relevance) return second.relevance - first.relevance;
+      const createdAtDifference = getTimestampMs(second.post.createdAt) - getTimestampMs(first.post.createdAt);
+      return createdAtDifference || first.index - second.index;
+    });
+    posts = rankedPosts.map(({ post }) => post);
+  }
 
   if (refreshVersion !== feedRefreshVersion) return;
 
