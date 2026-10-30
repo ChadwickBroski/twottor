@@ -13,6 +13,7 @@ import {
   where,
   orderBy,
   increment,
+  limit,
   serverTimestamp,
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -646,8 +647,15 @@ export async function refreshFeed(currentUser = auth.currentUser) {
       repliesContainer.dataset.expanded = String(!isExpanded);
       void loadReplies(post.id, repliesContainer, showRepliesButton);
     });
-    showRepliesButton.hidden = false;
-    showRepliesButton.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Show replies';
+    void getDocs(query(collection(db, "posts", post.id, "replies"), limit(1)))
+      .then((repliesSnapshot) => {
+        if (repliesSnapshot.empty) return;
+        showRepliesButton.hidden = false;
+        showRepliesButton.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Show replies';
+      })
+      .catch((error) => {
+        console.error("Unable to check for post replies:", error);
+      });
     replyButton.addEventListener("click", () => {
       if (!currentUser) {
         notification("Please log in before replying.", "failure");
