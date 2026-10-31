@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@100;200&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" />
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+    <link id="favicon" rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
     <title>Twottor</title>
   </head>
   <body id="body">
@@ -41,7 +41,7 @@
         </a>
         <a class="nav-link" href="#macaque" id="macaqueButton">
           <i class="fa-brands fa-openai"></i>
-          <span id="macaqueSideBar" aria-busy="true">MacaqueAI <i style="font-size: 12px; color: #1DA1F2;">beta</i> <span class="loader" aria-hidden="true"></span></span>
+          <span id="macaqueSideBar" aria-busy="true">MacaqueAI <i style="font-size: 12px; color: var(--primary);">beta</i> <span class="loader" aria-hidden="true"></span></span>
         </a>
         <a class="nav-link" href="#profile" id="profileButton">
           <i class="fa-solid fa-user"></i>
@@ -186,13 +186,11 @@
     <!-- Trending -->
     <main id="trending-view" hidden>
       <h1><i class="fa-solid fa-fire"></i> Trending</h1>
-      <hr>
     </main>
 
     <!-- Leaderboard -->
     <main id="leaderboard-view" hidden>
       <h1><i class="fa-solid fa-ranking-star"></i> Leaderboard</h1>
-      <hr>
     </main>
 
     <main id="macaque-view" hidden>
@@ -228,6 +226,29 @@
           <button id="theme-setting" type="button" aria-pressed="false">Dark mode: Off</button>
         </div>
         <div class="setting-row">
+          <span class="setting-icon"><i class="fa-solid fa-paintbrush"></i></span>
+          <div class="setting-copy">
+            <strong>Themes</strong>
+            <span>Select themes.</span>
+          </div>
+          <div class="app-dropdown theme-dropdown" id="theme-dropdown">
+            <button class="app-dropdown-trigger" id="theme-color-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose theme">
+              <span id="theme-color-label">Classic</span>
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="app-dropdown-menu" id="theme-color-menu" role="listbox" aria-label="Choose theme" hidden>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="classic" aria-selected="true">Classic</button>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="matrix" aria-selected="false">Matrix</button>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="fire" aria-selected="false">Fire</button>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="serika-dark" aria-selected="false">Serika Dark</button>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="aurora" aria-selected="false">Aurora</button>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="github" aria-selected="false">GitHub</button>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="dracula" aria-selected="false">Dracula</button>
+              <button class="app-dropdown-option" type="button" role="option" data-theme="ocean" aria-selected="false">Ocean</button>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
           <span class="setting-icon account-icon"><i class="fa-solid fa-user"></i></span>
           <div class="setting-copy">
             <strong>Account</strong>
@@ -249,7 +270,7 @@
             <span>Delete Account</span>
           </button>
         </div>
-        <p style="font-size: 12px; opacity: 0.75; text-align: center;"> &copy; 2026 Twottor <span id="settings-version">1.5.1.0</span> • Made by <a href="chadwickbroski.github.io" style="color:#002CF2;  text-decoration: none; font-weight: bold;">ChadwickBroski</a>. &bull; <i class="fa-brands fa-github"></i> Hosted on GITHUB</p>
+        <p style="font-size: 12px; opacity: 0.75; text-align: center;"> &copy; 2026 Twottor <span id="settings-version">1.5.1.0</span> • Made by <a href="chadwickbroski.github.io" style="color:var(--primary);  text-decoration: none; font-weight: bold;">ChadwickBroski</a>. &bull; <i class="fa-brands fa-github"></i> Hosted on GITHUB</p>
       </div>
     </div>
     <script type="module" src="src/index.js"></script>

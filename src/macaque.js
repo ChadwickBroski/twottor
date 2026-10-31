@@ -41,15 +41,15 @@ if (macaqueView) {
 				outline: none;
 				gap: 10px;
 				padding: 0 14px;
-				border: 1px solid #c5d0d9;
+				border: 1px solid var(--secondary-border);
 				border-radius: 999px;
 				background: #ffffff;
 				transition: border-color 160ms ease, box-shadow 160ms ease;
 			}
 
 			.macaque-prompt:focus-within {
-				border-color: #1da1f2;
-				box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.14);
+				border-color: var(--primary);
+				box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.14);
 			}
 
 			#macaque-view .macaque-header {
@@ -64,7 +64,7 @@ if (macaqueView) {
 			#macaque-view .macaque-status {
 				min-height: 24px;
 				margin: 6px 0 16px;
-				color: #657786;
+				color: var(--secondary);
 				font-size: 14px;
 			}
 
@@ -79,7 +79,7 @@ if (macaqueView) {
 				display: grid;
 				min-height: 100%;
 				place-items: center;
-				color: #657786;
+				color: var(--secondary);
 				font-size: clamp(24px, 4vw, 34px);
 				text-align: center;
 			}
@@ -95,7 +95,7 @@ if (macaqueView) {
 				padding: 12px 16px;
 				border-radius: 18px;
 				color: #17202a;
-				background: #e8f5fe;
+				background: var(--primary-light);
 				text-align: left;
 				overflow-wrap: anywhere;
 				white-space: pre-wrap;
@@ -115,14 +115,14 @@ if (macaqueView) {
 				align-items: center;
 				gap: 10px;
 				padding-top: 36px;
-				border-top: 1px solid #e1e8ed;
+				border-top: 1px solid var(--secondary-border);
 			}
 
 			#macaque-view .macaque-prompt,
 			#macaque-view .macaque-model {
 				min-height: 46px;
 				box-sizing: border-box;
-				border: 1px solid #c5d0d9;
+				border: 1px solid var(--secondary-border);
 				border-radius: 999px;
 				color: inherit;
 				background: #ffffff;
@@ -152,7 +152,7 @@ if (macaqueView) {
 				align-items: center;
 				gap: 8px;
 				padding: 6px 10px;
-				border: 1px solid #c5d0d9;
+				border: 1px solid var(--secondary-border);
 				border-radius: 999px;
 				color: inherit;
 				background: #ffffff;
@@ -185,11 +185,12 @@ if (macaqueView) {
 				left: auto !important;
 				right: 0 !important;
 				bottom: calc(100% + 8px);
+				top: auto;
 				z-index: 5;
 				display: grid;
 				width: 280px;
 				padding: 6px;
-				border: 1px solid #c5d0d9;
+				border: 1px solid var(--secondary-border);
 				border-radius: 12px;
 				background: #ffffff;
 				box-shadow: 0 8px 24px rgba(23, 32, 42, 0.16);
@@ -215,7 +216,7 @@ if (macaqueView) {
 
 			#macaque-view .macaque-model-option:hover,
 			#macaque-view .macaque-model-option[aria-selected="true"] {
-				background: #e8f5fe;
+				background: var(--primary-light);
 			}
 
 			#macaque-view .macaque-send {
@@ -239,7 +240,7 @@ if (macaqueView) {
 			#macaque-view .macaque-model:focus-visible,
 			#macaque-view .macaque-model-trigger:focus-visible,
 			#macaque-view .macaque-send:focus-visible {
-				outline: 2px solid #1da1f2;
+				outline: 2px solid var(--primary);
 				outline-offset: 2px;
 			}
 
@@ -247,13 +248,13 @@ if (macaqueView) {
 				overflow-x: auto;
 				padding: 12px;
 				border-radius: 8px;
-				background: #e8edf0;
+				background: var(--secondary-border);
 			}
 
 			#macaque-view .macaque-assistant code {
 				padding: 2px 5px;
 				border-radius: 4px;
-				background: #e8edf0;
+				background: var(--secondary-border);
 				font-family: Consolas, monospace;
 			}
 
@@ -301,7 +302,7 @@ if (macaqueView) {
 			}
 
 			#macaque-view .macaque-assistant th {
-				background: #e8edf0;
+				background: var(--secondary-border);
 				font-weight: 700;
 			}
 
@@ -316,7 +317,7 @@ if (macaqueView) {
 
 			body.dark-mode #macaque-view .macaque-status,
 			body.dark-mode #macaque-view .macaque-welcome {
-				color: #c5d0d9;
+				color: var(--secondary-border);
 			}
 
 			body.dark-mode #macaque-view .macaque-user span,
@@ -324,12 +325,12 @@ if (macaqueView) {
 			body.dark-mode #macaque-view .macaque-assistant code,
 			body.dark-mode #macaque-view .macaque-assistant th {
 				color: #f5f5f5;
-				background: #263746;
+				background: var(--surface-dark-border);
 			}
 
 			body.dark-mode #macaque-view .macaque-assistant th,
 			body.dark-mode #macaque-view .macaque-assistant td {
-				border-color: #536471;
+				border-color: var(--secondary);
 			}
 
 			body.dark-mode #macaque-view .macaque-assistant blockquote {
@@ -338,21 +339,21 @@ if (macaqueView) {
 			}
 
 			body.dark-mode #macaque-view .macaque-composer {
-				border-color: #38444d;
+				border-color: var(--surface-dark-border);
 			}
 
 			body.dark-mode #macaque-view .macaque-prompt,
 			body.dark-mode #macaque-view .macaque-model,
 			body.dark-mode #macaque-view .macaque-model-trigger,
 			body.dark-mode #macaque-view .macaque-model-menu {
-				border-color: #536471;
+				border-color: var(--secondary);
 				color: #f5f5f5;
-				background: #15202b;
+				background: var(--surface-dark);
 			}
 
 			body.dark-mode #macaque-view .macaque-model-option:hover,
 			body.dark-mode #macaque-view .macaque-model-option[aria-selected="true"] {
-				background: #22303c;
+				background: var(--surface-dark);
 			}
 
 			body.dark-mode #macaque-view .macaque-model-size {
@@ -405,14 +406,14 @@ if (macaqueView) {
 			<form class="macaque-composer" id="macaque-form">
 				<input class="macaque-prompt" id="macaque-prompt" placeholder="Message MacaqueAI..." autocomplete="off" aria-label="Message macaque AI" />
 				<div class="macaque-model-picker">
-					<button class="macaque-model-trigger" id="macaque-model-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose an AI model" disabled>
+					<button class="macaque-model-trigger app-dropdown-trigger" id="macaque-model-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose an AI model" disabled>
 						<img id="macaque-model-logo" src="https://www.google.com/s2/favicons?domain=cohere.com&sz=64" alt="" />
 						<span id="macaque-model-label">Cohere North Mini Code</span>
 						<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
 					</button>
-					<div class="macaque-model-menu" id="macaque-model-menu" role="listbox" aria-label="Choose an AI model" hidden>
-						<button class="macaque-model-option" type="button" role="option" data-model="Cohere North Mini Code" aria-selected="true"><img src="https://www.google.com/s2/favicons?domain=cohere.com&sz=64" alt="" /><span>Cohere North Mini Code</span></button>
-						<button class="macaque-model-option" type="button" role="option" data-model="LiquidAI LFM2.5 2.6B" aria-selected="false"><img src="https://www.google.com/s2/favicons?domain=liquid.ai&sz=64" alt="" /><span>LiquidAI LFM2.5 2.6B</span></button>
+					<div class="macaque-model-menu app-dropdown-menu" id="macaque-model-menu" role="listbox" aria-label="Choose an AI model" hidden>
+						<button class="macaque-model-option app-dropdown-option" type="button" role="option" data-model="Cohere North Mini Code" aria-selected="true"><img src="https://www.google.com/s2/favicons?domain=cohere.com&sz=64" alt="" /><span>Cohere North Mini Code</span></button>
+						<button class="macaque-model-option app-dropdown-option" type="button" role="option" data-model="LiquidAI LFM2.5 2.6B" aria-selected="false"><img src="https://www.google.com/s2/favicons?domain=liquid.ai&sz=64" alt="" /><span>LiquidAI LFM2.5 2.6B</span></button>
 					</div>
 				</div>
 				<select id="macaque-model" hidden aria-hidden="true">

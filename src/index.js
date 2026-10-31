@@ -44,6 +44,12 @@ const settingsModal = document.getElementById("modal");
 const settingsDialog = settingsModal.querySelector(".modal-content");
 const closeSettingsButton = document.getElementById("close-modal");
 const themeSettingButton = document.getElementById("theme-setting");
+const themeDropdown = document.getElementById("theme-dropdown");
+const themeColorTrigger = document.getElementById("theme-color-trigger");
+const themeColorLabel = document.getElementById("theme-color-label");
+const themeColorMenu = document.getElementById("theme-color-menu");
+const themeColorOptions = [...document.querySelectorAll("#theme-color-menu [data-theme]")];
+const faviconLink = document.getElementById("favicon");
 const logoutButton = document.getElementById("account-logout");
 const deleteAccountButton = document.getElementById("account-delete");
 const profileButton = document.getElementById("profileButton");
@@ -52,7 +58,7 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.7.1.1";
+const version = "1.8.0.0";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
@@ -114,6 +120,52 @@ function updateThemeSetting() {
     : '<i class="fa-solid fa-moon" aria-hidden="true"></i>';
 }
 
+const THEMES = {
+  classic: { dark: false, primary: "#ff0000" },
+  matrix: { dark: true, primary: "#00d957" },
+  fire: { dark: true, primary: "#ff5a1f" },
+  "serika-dark": { dark: true, primary: "#e2b714" },
+  aurora: { dark: true, primary: "#8b5cf6" },
+  github: { dark: false, primary: "#0969da" },
+  dracula: { dark: true, primary: "#bd93f9" },
+  ocean: { dark: true, primary: "#22d3ee" },
+};
+
+let faviconSvg;
+
+async function updateFavicon(color) {
+  if (!faviconSvg) {
+    faviconSvg = await fetch("assets/favicon.svg").then((response) => response.text());
+  }
+  const themedSvg = faviconSvg.replace(/fill="[^"]+"/, 'fill="' + color + '"');
+  faviconLink.href = "data:image/svg+xml," + encodeURIComponent(themedSvg);
+}
+
+function syncThemeMode(isDarkMode) {
+  document.body.classList.toggle("dark-mode", isDarkMode);
+  document.documentElement.classList.toggle("dark-mode", isDarkMode);
+  localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
+  toggle.style.backgroundColor = isDarkMode ? "var(--surface-dark)" : "#ffffff";
+  toggle.style.borderColor = isDarkMode ? "var(--surface-dark-border)" : "var(--secondary-border)";
+  settings.style.borderColor = isDarkMode ? "var(--surface-dark-border)" : "var(--secondary-border)";
+  updateThemeSetting();
+}
+
+function applyTheme(themeName, announce = false) {
+  const migratedTheme = themeName === "x" ? "serika-dark" : themeName;
+  const selectedTheme = THEMES[migratedTheme] ? migratedTheme : "classic";
+  document.documentElement.dataset.theme = selectedTheme;
+  localStorage.setItem("theme", selectedTheme);
+  const selectedOption = themeColorOptions.find((option) => option.dataset.theme === selectedTheme);
+  themeColorLabel.textContent = selectedOption?.textContent ?? "Classic";
+  themeColorOptions.forEach((option) => {
+    option.setAttribute("aria-selected", String(option === selectedOption));
+  });
+  syncThemeMode(THEMES[selectedTheme].dark);
+  updateFavicon(THEMES[selectedTheme].primary);
+  if (announce) notification(themeColorLabel.textContent + " theme selected");
+}
+
 async function logout() {
   await signOut(auth);
   window.location.href = "login.html";
@@ -165,19 +217,11 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function toggleDarkMode() {
-  const darkModeEnabled = document.body.classList.toggle("dark-mode");
-  document.documentElement.classList.toggle("dark-mode", darkModeEnabled);
-  localStorage.setItem("darkMode", darkModeEnabled ? "enabled" : "disabled");
-  toggle.style.backgroundColor = darkModeEnabled ? "#15202B" : "#ffffff";
-  toggle.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
-
-  settings.style.borderColor = darkModeEnabled ? "#38444D" : "#e1e8ed";
-  updateThemeSetting();
+  syncThemeMode(!document.body.classList.contains("dark-mode"));
 }
 
-if (darkMode) {
-  toggleDarkMode();
-}
+const savedTheme = localStorage.getItem("theme");
+applyTheme(savedTheme || (darkMode ? "serika-dark" : "classic"));
 
 if (window.matchMedia("(max-width: 640px)").matches) {
   const navLinks = document.getElementById("nav-links");
@@ -280,6 +324,22 @@ themeSettingButton.addEventListener("click", () => {
       ? "Dark Mode Selected"
       : "Light Mode Selected",
   );
+});
+themeColorTrigger.addEventListener("click", () => {
+  const isOpen = themeColorMenu.hidden;
+  themeColorMenu.hidden = !isOpen;
+  themeColorTrigger.setAttribute("aria-expanded", String(isOpen));
+});
+themeColorOptions.forEach((option) => option.addEventListener("click", () => {
+  applyTheme(option.dataset.theme, true);
+  themeColorMenu.hidden = true;
+  themeColorTrigger.setAttribute("aria-expanded", "false");
+}));
+document.addEventListener("click", (event) => {
+  if (!themeDropdown.contains(event.target)) {
+    themeColorMenu.hidden = true;
+    themeColorTrigger.setAttribute("aria-expanded", "false");
+  }
 });
 logoutButton.addEventListener("click", async () => {
   logoutButton.classList.add("loader");
