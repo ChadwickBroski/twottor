@@ -37,8 +37,6 @@ const sidebar = document.querySelector(".sidebar");
 const toggle = document.querySelector(".sidebar-toggle");
 const navLinks = [...document.querySelectorAll(".nav-links .nav-link")];
 const homeView = document.getElementById("home-view");
-const darkMode = localStorage.getItem("darkMode") === "enabled";
-
 const settings = document.getElementById("mobile-settings-button");
 const settingsModal = document.getElementById("modal");
 const settingsDialog = settingsModal.querySelector(".modal-content");
@@ -58,7 +56,7 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.8.1.0";
+const version = "1.8.1.1";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
@@ -221,7 +219,7 @@ function toggleDarkMode() {
 }
 
 const savedTheme = localStorage.getItem("theme");
-applyTheme(savedTheme || (darkMode ? "serika-dark" : "classic"));
+applyTheme(savedTheme || "classic");
 
 if (window.matchMedia("(max-width: 640px)").matches) {
   const navLinks = document.getElementById("nav-links");
