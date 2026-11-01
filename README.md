@@ -1,5 +1,5 @@
 <div style="text-align:center;">
-<img src="assets/favicon.svg" style="width:128px;height:128px;"></img>
+<img src="assets/favicon-readme.svg" style="width:128px;height:128px;"></img>
 
 # Twottor
 
