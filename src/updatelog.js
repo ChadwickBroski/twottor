@@ -1,5 +1,5 @@
 const updatelogView = document.getElementById("updatelog-view");
-const repository = "ChadwickBroski/twottor";
+const updateLogApiUrl = window.TWOTTOR_UPDATELOG_API_URL || "/api/github/updatelog";
 let updateLogLoaded = false;
 let updateLogRequest;
 
@@ -14,33 +14,21 @@ async function loadUpdateLog() {
   if (updateLogRequest) return updateLogRequest;
 
   updateLogRequest = (async () => {
-    const response = await fetch(
-      `https://api.github.com/repos/${repository}/commits?per_page=100`,
-    );
+    const response = await fetch(updateLogApiUrl, {
+      headers: { Accept: "application/json" },
+    });
     const commitsPayload = await response.json();
 
     if (!response.ok || !Array.isArray(commitsPayload)) {
       const errorMessage = commitsPayload?.message || `GitHub request failed (${response.status})`;
       updatelogView.innerHTML = `
         <h1><i class="fa-solid fa-newspaper"></i> Update log</h1>
-        <p class="update-log-error">API rate limit has been exceeded. Each request will be authenticated soon.</p>
+        <p class="update-log-error">Unable to load the update log. ${escapeUpdateText(errorMessage)}</p>
       `;
       throw new Error(errorMessage);
     }
 
-    const commitsWithStats = await Promise.all(
-      commitsPayload.map(async (commit) => {
-        if (!commit.url) return commit;
-        try {
-          const detailResponse = await fetch(commit.url);
-          if (!detailResponse.ok) return commit;
-          const details = await detailResponse.json();
-          return { ...commit, stats: details.stats };
-        } catch {
-          return commit;
-        }
-      }),
-    );
+    const commitsWithStats = commitsPayload;
 
     updatelogView.innerHTML = `
       <h1><i class="fa-solid fa-newspaper"></i> Update log</h1>

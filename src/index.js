@@ -58,7 +58,7 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.8.0.0";
+const version = "1.8.1.0";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
