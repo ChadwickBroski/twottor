@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Twottor is a thoughtful social space for sharing ideas, finding your people, and staying curious." />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon-readme.svg" />
+    <title>Twottor — Find your people</title>
+  </head>
+  <body class="landing-page">
+    <header class="landing-header">
+      <a class="landing-brand" href="landing.html" aria-label="Twottor home"><span class="landing-brand-mark"><i class="fa-solid fa-feather"></i></span><span>Twottor</span></a>
+      <nav class="landing-nav" aria-label="Landing page navigation"><a href="#features">Features</a><a href="login.html">Log in</a><a class="landing-nav-cta" href="signup.html">Join Twottor <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></nav>
+    </header>
+
+    <main>
+      <section class="landing-hero">
+        <div class="landing-hero-copy">
+          <p class="landing-eyebrow"><span></span> A little more human online</p>
+          <h1>Say what’s on your <em>mind.</em></h1>
+          <p class="landing-lede">Twottor is a lively corner of the internet for sharing the moment, following your interests, and finding conversations worth having.</p>
+          <div class="landing-actions"><a class="landing-button landing-button-primary" href="signup.html">Create your account <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a><a class="landing-button landing-button-quiet" href="login.html">I already have an account</a></div>
+          <p class="landing-note"><i class="fa-solid fa-sparkles" aria-hidden="true"></i> Free to join. Built for curious people.</p>
+        </div>
+        <div class="landing-visual" aria-label="A preview of the Twottor conversation feed">
+          <div class="landing-orbit landing-orbit-one"></div><div class="landing-orbit landing-orbit-two"></div>
+          <div class="landing-float landing-float-top"><i class="fa-solid fa-fire"></i> Trending now</div>
+          <div class="landing-feed-card"><div class="landing-feed-topbar"><span class="landing-window-dots"><i></i><i></i><i></i></span><span>For you</span><i class="fa-solid fa-sliders" aria-hidden="true"></i></div>
+            <article class="landing-post"><div class="landing-avatar landing-avatar-purple">M</div><div class="landing-post-body"><div><strong>Maya Chen</strong> <span>@mayachen · 4m</span></div><p>Small ideas become big things when the right people find them. ✨</p><div class="landing-post-actions"><span><i class="fa-regular fa-comment"></i> 12</span><span><i class="fa-solid fa-eye"></i> 94</span><span class="is-liked"><i class="fa-solid fa-thumbs-up"></i> 28</span></div></div></article>
+            <article class="landing-post landing-post-muted"><div class="landing-avatar landing-avatar-orange">R</div><div class="landing-post-body"><div><strong>Ravi Singh</strong> <span>@ravi · 18m</span></div><p>What are you reading this week?</p><div class="landing-post-actions"><span><i class="fa-regular fa-comment"></i> 7</span><span><i class="fa-solid fa-eye"></i> 46</span><span><i class="fa-regular fa-thumbs-up"></i> 11</span></div></div></article>
+          </div>
+          <div class="landing-float landing-float-bottom"><i class="fa-solid fa-user-group"></i> <span id="community-count">People are talking</span></div>
+        </div>
+      </section>
+
+      <section class="landing-features" id="features"><div class="landing-section-heading"><p class="landing-eyebrow"><span></span> Made for the way you think</p><h2>More signal. Less noise.</h2><p>Everything you need to make your little corner of the internet feel like yours.</p></div><div class="landing-feature-grid">
+        <article class="landing-feature"><div class="landing-feature-icon"><i class="fa-solid fa-compass"></i></div><h3>Follow your curiosity</h3><p>Discover trending conversations and people who make you think, laugh, or look twice.</p></article>
+        <article class="landing-feature"><div class="landing-feature-icon landing-feature-icon-pink"><i class="fa-solid fa-comments"></i></div><h3>Join the conversation</h3><p>Share your take, reply with care, and build real connections one post at a time.</p></article>
+        <article class="landing-feature"><div class="landing-feature-icon landing-feature-icon-gold"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>Stay inspired</h3><p>Use MacaqueAI to explore ideas, brainstorm, and turn a passing thought into something more.</p></article>
+      </div></section>
+
+      <section class="landing-stats" aria-labelledby="landing-stats-title">
+        <div class="landing-section-heading">
+          <p class="landing-eyebrow"><span></span> The community at a glance</p>
+          <h2 id="landing-stats-title">Twottor statistics</h2>
+          <p>These are the current Twottor stats.</p>
+        </div>
+        <div class="landing-stat-grid">
+          <article class="landing-stat"><strong id="stat-members">-</strong><span>members</span></article>
+          <article class="landing-stat"><strong id="stat-posts">-</strong><span>posts shared</span></article>
+          <article class="landing-stat"><strong id="stat-storage">-</strong><span>storage used</span></article>
+        </div>
+      </section>
+    </main>
+    <footer class="landing-footer"><a class="landing-brand" href="landing.html"><span class="landing-brand-mark"><i class="fa-solid fa-feather"></i></span><span>Twottor</span></a><span>Made for people with something to say.</span><span>&copy; 2026 Twottor</span></footer>
+    <script type="module" src="src/landing.js"></script>
+  </body>
+</html>
