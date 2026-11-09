@@ -51,6 +51,7 @@ let isRefreshingInterests = false;
 let feedRefreshVersion = 0;
 const INTEREST_REFRESH_INTERVAL_MS = 2 * 60 * 1000;
 const INTEREST_ACTION_THRESHOLD = 3;
+const FEED_POST_LIMIT = 50;
 
 function clampInterest(value, fallback = 0.25) {
   const numericValue = Number(value);
@@ -469,6 +470,7 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     query(
       collection(db, "posts"),
       orderBy("createdAt", "desc"),
+      limit(FEED_POST_LIMIT),
     ),
   );
 

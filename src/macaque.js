@@ -45,6 +45,7 @@ if (macaqueView) {
 				border-radius: 999px;
 				background: #ffffff;
 				transition: border-color 160ms ease, box-shadow 160ms ease;
+				box-shadow: 0 8px 12px rgb(23 32 42 / 0.06);
 			}
 
 			.macaque-prompt:focus-within {
@@ -159,6 +160,7 @@ if (macaqueView) {
 				font: inherit;
 				text-align: left;
 				cursor: pointer;
+				box-shadow: 0 8px 12px rgb(23 32 42 / 0.06);
 			}
 
 			#macaque-view .macaque-model-trigger img,
@@ -193,7 +195,7 @@ if (macaqueView) {
 				border: 1px solid var(--secondary-border);
 				border-radius: 12px;
 				background: #ffffff;
-				box-shadow: 0 8px 24px rgba(23, 32, 42, 0.16);
+				box-shadow: 0 8px 24px rgb(23 32 42 / 0.08);
 			}
 
 			#macaque-view .macaque-model-menu[hidden] {
@@ -349,6 +351,12 @@ if (macaqueView) {
 				border-color: var(--secondary);
 				color: #f5f5f5;
 				background: var(--surface-dark);
+			}
+
+			body.dark-mode #macaque-view .macaque-prompt:not(:focus-within),
+			body.dark-mode #macaque-view .macaque-model-trigger,
+			body.dark-mode #macaque-view .macaque-model-menu {
+				box-shadow: 0 8px 12px rgb(0 0 0 / 0.25);
 			}
 
 			body.dark-mode #macaque-view .macaque-model-option:hover,
@@ -513,6 +521,14 @@ if (macaqueView) {
 		chat.appendChild(message);
 	}
 
+	function trimChatDom() {
+		const chatMessages = chat.querySelectorAll(".macaque-user, .macaque-assistant");
+		const maxChatMessages = 24;
+		for (let index = 0; index < chatMessages.length - maxChatMessages; index += 1) {
+			chatMessages[index].remove();
+		}
+	}
+
 	function formatMarkdown(text) {
 		const escaped = text
 			.replace(/&/g, "&amp;")
@@ -673,6 +689,7 @@ if (macaqueView) {
 		const assistantMessage = document.createElement("div");
 		assistantMessage.className = "macaque-assistant";
 		chat.appendChild(assistantMessage);
+		trimChatDom();
 		messages.push({ role: "user", content: text });
 		const maxMessages = 11;
 		if (messages.length > maxMessages) {
