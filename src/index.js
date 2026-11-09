@@ -56,7 +56,7 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.10.0.0";
+const version = "1.10.0.1";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
@@ -219,7 +219,11 @@ function toggleDarkMode() {
 }
 
 const savedTheme = localStorage.getItem("theme");
+const savedDarkMode = localStorage.getItem("darkMode");
 applyTheme(savedTheme || "classic");
+if (savedDarkMode === "enabled" || savedDarkMode === "disabled") {
+  syncThemeMode(savedDarkMode === "enabled");
+}
 
 if (window.matchMedia("(max-width: 640px)").matches) {
   const navLinks = document.getElementById("nav-links");
