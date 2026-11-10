@@ -44,6 +44,8 @@ function getAuthErrorMessage(error) {
     "auth/invalid-email": "Enter a valid email address.",
     "auth/too-many-requests": "Too many attempts. Try again later.",
     "auth/popup-closed-by-user": "Google sign-in was cancelled.",
+    "auth/requests-from-referer-blocked": "Google sign-in is blocked by the Firebase API key's website restriction. In Google Cloud Console, allow https://twottor.firebaseapp.com/* and your deployed site domain for this API key.",
+    "auth/unauthorized-domain": "This site is not authorized for Firebase Authentication. Add its domain in Firebase Console under Authentication > Settings > Authorized domains.",
   };
 
   return messages[error.code] || "Unable to log in. Please try again.";

@@ -13,9 +13,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import {
   getAuth,
+  GoogleAuthProvider,
+  linkWithPopup,
   onAuthStateChanged,
   signOut,
   deleteUser,
+  unlink,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -50,13 +53,17 @@ const themeColorOptions = [...document.querySelectorAll("#theme-color-menu [data
 const faviconLink = document.getElementById("favicon");
 const logoutButton = document.getElementById("account-logout");
 const deleteAccountButton = document.getElementById("account-delete");
+const googleLinkButton = document.getElementById("google-link-button");
+const googleLinkStatus = document.getElementById("google-link-status");
+const googleLinkFeedback = document.getElementById("google-link-feedback");
+const googleProvider = new GoogleAuthProvider();
 const profileButton = document.getElementById("profileButton");
 const accountButton = document.querySelector(".nav-link.user");
 const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.10.0.2";
+const version = "1.11.0.0";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
@@ -119,12 +126,11 @@ function updateThemeSetting() {
 }
 
 const THEMES = {
-  classic: { dark: false, primary: "#ff0000" },
+  classic: { dark: false, primary: "#1DA1F2" },
   matrix: { dark: true, primary: "#00d957" },
   fire: { dark: true, primary: "#ff5a1f" },
   "serika-dark": { dark: true, primary: "#e2b714" },
   aurora: { dark: true, primary: "#8b5cf6" },
-  github: { dark: false, primary: "#0969da" },
   dracula: { dark: true, primary: "#bd93f9" },
   ocean: { dark: true, primary: "#22d3ee" },
 };
@@ -201,6 +207,40 @@ function closeSettings() {
   settings.focus();
 }
 
+function updateGoogleLinkState(user) {
+  const isLinked = user.providerData.some(
+    (provider) => provider.providerId === GoogleAuthProvider.PROVIDER_ID,
+  );
+  const hasAlternativeProvider = user.providerData.some(
+    (provider) => provider.providerId !== GoogleAuthProvider.PROVIDER_ID,
+  );
+
+  googleLinkStatus.textContent = isLinked
+    ? hasAlternativeProvider
+      ? "Linked"
+      : "Linked. Google is the only sign-in method."
+    : "Unlinked";
+  googleLinkButton.textContent = isLinked ? "Unlink Google" : "Link with Google";
+  googleLinkButton.disabled = isLinked && !hasAlternativeProvider;
+  googleLinkButton.title = googleLinkButton.disabled
+    ? "Google is the only sign-in method for this account."
+    : "";
+}
+
+function googleLinkError(error) {
+  const messages = {
+    "auth/popup-closed-by-user": "Google linking was cancelled.",
+    "auth/credential-already-in-use": "That Google account is already linked to another Twottor account.",
+    "auth/provider-already-linked": "A Google account is already linked.",
+    "auth/no-such-provider": "No Google account is linked.",
+    "auth/requires-recent-login": "Please log out and back in, then try unlinking Google again.",
+    "auth/unauthorized-domain": "This site is not authorized for Firebase Authentication. Add its domain in Firebase Console under Authentication > Settings > Authorized domains.",
+    "auth/requests-from-referer-blocked": "Google linking is blocked by the Firebase API key's website restriction. Update the key's allowed HTTP referrers in Google Cloud Console.",
+  };
+
+  return messages[error.code] || "Unable to update Google linking. Please try again.";
+}
+
 const usernameSpan = document.getElementById("usernameSpan");
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -208,10 +248,10 @@ onAuthStateChanged(auth, (user) => {
     return;
   }
 
+  updateGoogleLinkState(user);
   if (usernameSpan) {
     usernameSpan.textContent = user.email ?? "";
   }
-
 });
 
 function toggleDarkMode() {
@@ -351,6 +391,47 @@ logoutButton.addEventListener("click", async () => {
   } finally {
     logoutButton.classList.remove("loader");
     logoutButton.removeAttribute("aria-busy");
+  }
+});
+googleLinkButton.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    googleLinkStatus.textContent = "You must be signed in to manage linked accounts.";
+    return;
+  }
+
+  googleLinkButton.disabled = true;
+  googleLinkButton.setAttribute("aria-busy", "true");
+  googleLinkButton.classList.add("is-loading");
+  googleLinkFeedback.textContent = "Updating Google link...";
+  try {
+    const isLinked = user.providerData.some(
+      (provider) => provider.providerId === GoogleAuthProvider.PROVIDER_ID,
+    );
+    if (isLinked) {
+      const hasAlternativeProvider = user.providerData.some(
+        (provider) => provider.providerId !== GoogleAuthProvider.PROVIDER_ID,
+      );
+      if (!hasAlternativeProvider) {
+        googleLinkFeedback.textContent = "Add another sign-in method before unlinking Google.";
+        return;
+      }
+
+      const result = await unlink(user, GoogleAuthProvider.PROVIDER_ID);
+      updateGoogleLinkState(result);
+      googleLinkFeedback.textContent = "Google account unlinked.";
+    } else {
+      const result = await linkWithPopup(user, googleProvider);
+      updateGoogleLinkState(result.user);
+      googleLinkFeedback.textContent = "Google account linked.";
+    }
+  } catch (error) {
+    updateGoogleLinkState(auth.currentUser || user);
+    googleLinkFeedback.textContent = googleLinkError(error);
+  } finally {
+    googleLinkButton.classList.remove("is-loading");
+    googleLinkButton.removeAttribute("aria-busy");
+    updateGoogleLinkState(auth.currentUser || user);
   }
 });
 deleteAccountButton.addEventListener("click", async () => {

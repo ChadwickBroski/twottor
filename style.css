@@ -2280,6 +2280,37 @@ body.dark-mode .app-dropdown-option[aria-selected="true"] {
   background: #b42332;
 }
 
+.google-account-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  color: #ffffff;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  background: var(--primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.google-account-button:hover:not(:disabled) {
+  border-color: var(--primary-hover);
+  background: var(--primary-hover);
+}
+
+.google-account-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.google-account-button.is-loading {
+  cursor: wait;
+}
+
 .modal-content button:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 2px;
@@ -2773,8 +2804,10 @@ body.dark-mode .profile-post-actions button[aria-pressed="true"] {
   color: #17202a;
   background: #ffffff;
   border: 1px solid var(--secondary-border);
-  cursor: not-allowed;
-  opacity: 50%;
+}
+
+.google-login:disabled {
+  cursor: wait;
 }
 
 .google-login:hover {

@@ -38,6 +38,13 @@ const googleButton = document.querySelector(".google-login");
 const message = document.querySelector("#signup-message");
 const submitButton = form.querySelector(".login-submit");
 const handlePattern = /^[a-zA-Z0-9_]{3,20}$/;
+let pendingGoogleUser = null;
+
+function getSuggestedHandle(user, username) {
+  const source = user.email?.split("@")[0] || username;
+  const handle = source.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 20);
+  return handlePattern.test(handle) ? handle : `user_${user.uid.slice(0, 8)}`;
+}
 
 async function handleIsTaken(handle, exceptUid = null) {
   const handleSnapshot = await getDoc(doc(db, "handles", handle));
@@ -80,6 +87,8 @@ function authError(error) {
     "auth/invalid-email": "Enter a valid email address.",
     "auth/weak-password": "Use a stronger password with at least 6 characters.",
     "auth/popup-closed-by-user": "Google sign-up was cancelled.",
+    "auth/requests-from-referer-blocked": "Google sign-up is blocked by the Firebase API key's website restriction. In Google Cloud Console, allow https://twottor.firebaseapp.com/* and your deployed site domain for this API key.",
+    "auth/unauthorized-domain": "This site is not authorized for Firebase Authentication. Add its domain in Firebase Console under Authentication > Settings > Authorized domains.",
   };
 
   return errors[error.code] || "Unable to create the account. Please try again.";
@@ -160,17 +169,6 @@ form.addEventListener("submit", async (event) => {
 });
 
 googleButton.addEventListener("click", async () => {
-  const username = document.querySelector("#username").value.trim();
-  const handle = document.querySelector("#handle").value.trim();
-  if (!handlePattern.test(handle)) {
-    showMessage("Use a 3-20 character handle with only letters, numbers, and underscores.", true);
-    return;
-  }
-  if (!username || !handle) {
-    showMessage("Enter a username and handle before signing up with Google.", true);
-    return;
-  }
-
   googleButton.disabled = true;
   googleButton.classList.add("loader");
   googleButton.setAttribute("aria-busy", "true");
@@ -178,19 +176,44 @@ googleButton.addEventListener("click", async () => {
   showMessage("");
 
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    if (await handleIsTaken(handle, result.user.uid)) {
-      await signOut(auth);
-      showMessage("That handle is already in use. Choose another one.", true);
+    const user = pendingGoogleUser || (await signInWithPopup(auth, googleProvider)).user;
+    pendingGoogleUser = user;
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnapshot = await getDoc(userRef);
+    const existingProfile = userSnapshot.data();
+    if (existingProfile?.handle) {
+      window.location.href = "index.html";
       return;
     }
 
-    await claimHandle(handle, result.user);
-    await setDoc(doc(db, "users", result.user.uid), {
-      uid: result.user.uid,
-      email: result.user.email,
-      username,
+    const username = document.querySelector("#username").value.trim()
+      || user.displayName?.trim()
+      || user.email?.split("@")[0]
+      || "User";
+    const handle = document.querySelector("#handle").value.trim()
+      || getSuggestedHandle(user, username);
+
+    if (!handlePattern.test(handle)) {
+      document.querySelector("#handle").focus();
+      showMessage("Use a 3-20 character handle with only letters, numbers, and underscores.", true);
+      return;
+    }
+
+    if (await handleIsTaken(handle, user.uid)) {
+      document.querySelector("#handle").focus();
+      showMessage(`The suggested handle @${handle} is already in use. Choose another handle to continue.`, true);
+      return;
+    }
+
+    await claimHandle(handle, user);
+    const profile = {
+      uid: user.uid,
+      email: user.email,
+      username: existingProfile?.username || username,
       handle,
+    };
+    const profileDefaults = {
       totalLikes: 0,
       totalDislikes: 0,
       totalViews: 0,
@@ -200,13 +223,19 @@ googleButton.addEventListener("click", async () => {
       interestScores: initialInterestScores,
       interestActionCount: 0,
       interestUpdatedAt: serverTimestamp(),
-      createdAt: serverTimestamp(),
-    }, { merge: true });
+    };
+    for (const [key, value] of Object.entries(profileDefaults)) {
+      if (existingProfile?.[key] == null) {
+        profile[key] = value;
+      }
+    }
+    if (!existingProfile?.createdAt) {
+      profile.createdAt = serverTimestamp();
+    }
+    await setDoc(userRef, profile, { merge: true });
+    pendingGoogleUser = null;
     window.location.href = "index.html";
   } catch (error) {
-    if (error.code === "handle/already-in-use") {
-      await signOut(auth);
-    }
     showMessage(authError(error), true);
   } finally {
     googleButton.disabled = false;
