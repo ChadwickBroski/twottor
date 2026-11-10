@@ -56,7 +56,7 @@ const profileMenu = document.getElementById("profile-menu");
 const mobileSettingsButton = document.getElementById("mobile-settings-button");
 const mobileLogoutButton = document.getElementById("mobile-logout-button");
 
-const version = "1.10.0.1";
+const version = "1.10.0.2";
 const desktopVersion = document.getElementById("desktop-version");
 const settingsVersion = document.getElementById("settings-version");
 
@@ -166,7 +166,7 @@ function applyTheme(themeName, announce = false) {
 
 async function logout() {
   await signOut(auth);
-  window.location.href = "login.html";
+  window.location.href = "landing.html";
 }
 
 async function deleteAccount() {
@@ -188,7 +188,7 @@ async function deleteAccount() {
   await Promise.all(accountDocuments);
   await deleteUser(auth.currentUser);
   await logout();
-  window.location.href = "login.html";
+  window.location.href = "landing.html";
 }
 
 function openSettings() {
@@ -204,7 +204,7 @@ function closeSettings() {
 const usernameSpan = document.getElementById("usernameSpan");
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.replace("login.html");
+    window.location.replace("landing.html");
     return;
   }
 
@@ -359,7 +359,7 @@ deleteAccountButton.addEventListener("click", async () => {
   try {
     await deleteAccount(auth.currentUser);
     await signOut(auth);
-    window.location.href = "login.html";
+    window.location.href = "landing.html";
   } finally {
     deleteAccountButton.classList.remove("loader");
     deleteAccountButton.removeAttribute("aria-busy");
