@@ -26,13 +26,27 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const accessStatus = document.getElementById("access-status");
 const status = document.getElementById("status");
+const progress = document.getElementById("recalculation-progress");
 const recalculateButton = document.getElementById("recalculate-button");
 const MAX_BATCH_WRITES = 400;
 
 let authorizedUser;
+let completedWork = 0;
+let totalWork = 0;
 
 function setStatus(message) {
   status.textContent = message;
+}
+
+function updateProgress(message) {
+  completedWork += 1;
+  progress.value = completedWork;
+  const percentage = Math.floor((completedWork / totalWork) * 100);
+  setStatus(`${message} (${percentage}% - ${completedWork}/${totalWork} steps)`);
+}
+
+function getBatchCount(updateCount) {
+  return Math.ceil(updateCount / MAX_BATCH_WRITES);
 }
 
 function clampScore(value, fallback = 0.25) {
@@ -60,13 +74,15 @@ function feedbackText(label, posts) {
     .join("\n");
 }
 
-async function commitUpdates(updates) {
+async function commitUpdates(updates, label) {
   for (let start = 0; start < updates.length; start += MAX_BATCH_WRITES) {
     const batch = writeBatch(db);
     updates.slice(start, start + MAX_BATCH_WRITES).forEach(({ reference, data }) => {
       batch.update(reference, data);
     });
     await batch.commit();
+    const savedCount = Math.min(start + MAX_BATCH_WRITES, updates.length);
+    updateProgress(`Saved ${label}: ${savedCount}/${updates.length}`);
   }
 }
 
@@ -85,6 +101,8 @@ async function requireAdmin() {
 
 async function recalculateRecommendationData() {
   recalculateButton.disabled = true;
+  progress.hidden = false;
+  progress.removeAttribute("value");
   setStatus("Loading posts and users…");
 
   const [postsSnapshot, usersSnapshot] = await Promise.all([
@@ -101,6 +119,15 @@ async function recalculateRecommendationData() {
     reference: userDocument.ref,
     ...userDocument.data(),
   }));
+  totalWork = 2
+    + posts.length
+    + getBatchCount(posts.length)
+    + users.length
+    + getBatchCount(users.length);
+  completedWork = 2;
+  progress.max = totalWork;
+  progress.value = completedWork;
+  setStatus(`Loaded ${posts.length} posts and ${users.length} users. Starting recalculation (${completedWork}/${totalWork} steps).`);
 
   const postUpdates = [];
   for (let index = 0; index < posts.length; index += 1) {
@@ -112,9 +139,9 @@ async function recalculateRecommendationData() {
       reference: post.reference,
       data: { topic: post.topic, topicScores: post.topicScores },
     });
-    setStatus(`Classified posts: ${index + 1}/${posts.length}`);
+    updateProgress(`Classified posts: ${index + 1}/${posts.length}`);
   }
-  await commitUpdates(postUpdates);
+  await commitUpdates(postUpdates, "post updates");
 
   const userUpdates = [];
   for (let index = 0; index < users.length; index += 1) {
@@ -142,10 +169,11 @@ async function recalculateRecommendationData() {
         interestUpdatedAt: serverTimestamp(),
       },
     });
-    setStatus(`Recalculated users: ${index + 1}/${users.length}`);
+    updateProgress(`Recalculated users: ${index + 1}/${users.length}`);
   }
-  await commitUpdates(userUpdates);
+  await commitUpdates(userUpdates, "user updates");
   setStatus(`Complete. Recalculated ${posts.length} posts and ${users.length} users.`);
+  progress.value = totalWork;
   recalculateButton.disabled = false;
 }
 

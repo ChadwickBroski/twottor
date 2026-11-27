@@ -577,11 +577,35 @@ export async function refreshFeed(currentUser = auth.currentUser) {
     } else if (timeAgo < 60) {
       createdAtText = `${Math.floor(timeAgo)} seconds ago`;
     } else if (timeAgo < 3600) {
-      createdAtText = `${Math.floor(timeAgo / 60)} minutes ago`;
+      if(Math.floor(timeAgo / 60) == 1){
+        createdAtText = `${Math.floor(timeAgo / 60)} minute ago`;
+      } else {
+        createdAtText = `${Math.floor(timeAgo / 60)} minutes ago`;
+      }
     } else if (timeAgo < 86400) {
-      createdAtText = `${Math.floor(timeAgo / 3600)} hours ago`;
+      if(Math.floor(timeAgo / 3600) == 1){
+        createdAtText = `${Math.floor(timeAgo / 3600)} hour ago`;
+      } else {
+        createdAtText = `${Math.floor(timeAgo / 3600)} hours ago`;
+      }
+    } else if (timeAgo < 2592000) {
+      if(Math.floor(timeAgo / 86400) == 1){
+        createdAtText = `${Math.floor(timeAgo / 86400)} day ago`;
+      } else {
+        createdAtText = `${Math.floor(timeAgo / 86400)} days ago`;
+      }
+    } else if (timeAgo < 31536000) {
+      if(Math.floor(timeAgo / 2592000) == 1){
+        createdAtText = `${Math.floor(timeAgo / 2592000)} month ago`;
+      } else {
+        createdAtText = `${Math.floor(timeAgo / 2592000)} months ago`;
+      }
     } else {
-      createdAtText = `${Math.floor(timeAgo / 86400)} days ago`;
+      if(Math.floor(timeAgo / 31536000) == 1){
+        createdAtText = `${Math.floor(timeAgo / 31536000)} year ago`;
+      } else {
+        createdAtText = `${Math.floor(timeAgo / 31536000)} years ago`;
+      }
     }
     let authorProfile = authorProfiles.get(post.uid) ?? {};
     let authorName = escapeHtml(post.username || authorProfile.username || post.userEmail || "Unknown user");
