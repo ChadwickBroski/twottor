@@ -34,7 +34,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const analytics = getAnalytics(app);
+getAnalytics(app);
 
 const sidebar = document.querySelector(".sidebar");
 const toggle = document.querySelector(".sidebar-toggle");
@@ -266,7 +266,6 @@ if (savedDarkMode === "enabled" || savedDarkMode === "disabled") {
 }
 
 if (window.matchMedia("(max-width: 640px)").matches) {
-  const navLinks = document.getElementById("nav-links");
   const homeButton = document.getElementById("homeButton");
   const searchButton = document.getElementById("searchButton");
   const trendingButton = document.getElementById("trendingButton");

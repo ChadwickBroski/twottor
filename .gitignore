@@ -2,3 +2,5 @@ server.cjs
 firestore.rules
 count-posts.js
 stats.js
+
+node_modules/
