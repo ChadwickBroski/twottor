@@ -2007,7 +2007,7 @@ body.dark-mode .version {
 
 .profile-menu-item:hover,
 .profile-menu-item:focus-visible {
-  background: #f1f3f4;
+  background: #e7ebeb;
   outline: none;
 }
 
@@ -2022,7 +2022,7 @@ body.dark-mode .profile-menu-item {
 
 body.dark-mode .profile-menu-item:hover,
 body.dark-mode .profile-menu-item:focus-visible {
-  background: var(--surface-dark);
+  background: var(--surface-dark-border);
 }
 
 .modal[aria-hidden="true"] {
